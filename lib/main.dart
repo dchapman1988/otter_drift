@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+const String _lanIp = '192.168.50.36';
+
 
 void main() {
   runApp(const MyApp());
@@ -56,6 +61,34 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  // holds server result / error
+  String? _msg;
+  String? _err;
+
+  String get apiBase =>
+      Platform.isAndroid ? 'http://$_lanIp:3000' : 'http://localhost:3000';
+
+  @override
+    void initState() {
+      super.initState();
+      _fetchHello(); // kick off the request on screen load
+    }
+
+	Future<void> _fetchHello() async {
+		try {
+			final res = await http.get(Uri.parse('$apiBase/hello'));
+			if (res.statusCode == 200) {
+				final map = jsonDecode(res.body) as Map<String, dynamic>;
+				setState(() => _msg = map['message']?.toString());
+			} else {
+				setState(() => _err = 'HTTP ${res.statusCode}: ${res.body}');
+			}
+		} catch (e) {
+			setState(() => _err = e.toString());
+		}
+	}
+
+
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -109,6 +142,17 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            Text('API: $apiBase', style: const TextStyle(fontSize: 12)),
+						if (_err != null) ...[
+							const SizedBox(height: 12),
+										Text('Error: $_err', style: const TextStyle(color: Colors.red)),
+						] else if (_msg != null) ...[
+							const SizedBox(height: 12),
+						Text(_msg!, style: Theme.of(context).textTheme.titleLarge),
+						] else ...[
+							const SizedBox(height: 12),
+						const Text('Loading...'),
+						]
           ],
         ),
       ),
@@ -120,3 +164,5 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+
