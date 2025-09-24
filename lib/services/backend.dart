@@ -9,23 +9,39 @@ class BackendService {
   ));
 
   static Future<Map<String, dynamic>?> saveScore({
-    required String name,
-    required int score,
     required String sessionId,
+    required String playerName,
+    required int seed,
+    required DateTime startedAt,
+    required DateTime endedAt,
+    required int finalScore,
+    required double gameDuration,
+    required double maxSpeedReached,
+    required int obstaclesAvoided,
+    required int liliesCollected,
   }) async {
     try {
-      final response = await _dio.post('/api/v1/scores', data: {
-        'name': name,
-        'score': score,
-        'session_id': sessionId,
+      final response = await _dio.post('/api/v1/game_sessions', data: {
+        'game_session': {
+          'session_id': sessionId,
+          'player_name': playerName,
+          'seed': seed,
+          'started_at': startedAt.toIso8601String(),
+          'ended_at': endedAt.toIso8601String(),
+          'final_score': finalScore,
+          'game_duration': gameDuration,
+          'max_speed_reached': maxSpeedReached,
+          'obstacles_avoided': obstaclesAvoided,
+          'lilies_collected': liliesCollected,
+        }
       });
       
-      print('POST /api/v1/scores - Status: ${response.statusCode}');
+      print('POST /api/v1/game_sessions - Status: ${response.statusCode}');
       print('Response: ${response.data}');
       
       return response.data;
     } catch (e) {
-      print('POST /api/v1/scores - Error: $e');
+      print('POST /api/v1/game_sessions - Error: $e');
       return null;
     }
   }

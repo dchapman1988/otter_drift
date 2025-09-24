@@ -27,6 +27,9 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   double lastSpeedIncrease = 0.0;
   double nextSpawnTime = 0.0;
   String sessionId = '';
+  DateTime? gameStartedAt;
+  int obstaclesAvoided = 0;
+  int liliesCollected = 0;
   
   @override
   Future<void> onLoad() async {
@@ -34,6 +37,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     seed = DateTime.now().millisecondsSinceEpoch;
     _rng = SeededRandom(seed: seed);
     sessionId = const Uuid().v4();
+    gameStartedAt = DateTime.now();
     
     // Preload all sprites - temporarily disabled due to invalid PNG files
     // await _preloadSprites();
@@ -139,6 +143,9 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
           takeDamage();
           _otter.takeDamage();
         }
+      } else if (log.position.y > _otter.position.y + _otter.size.y) {
+        // Log has passed the otter without collision
+        obstaclesAvoided++;
       }
     }
     
@@ -181,6 +188,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
 
   void addScore(int points) {
     score += points;
+    liliesCollected += points; // Each lily gives 1 point
     _hud.updateScore(score);
   }
 
@@ -204,11 +212,14 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     currentSpeed = 120.0;
     gameTime = 0.0;
     lastSpeedIncrease = 0.0;
+    obstaclesAvoided = 0;
+    liliesCollected = 0;
     
     // New seed for new game
     seed = DateTime.now().millisecondsSinceEpoch;
     _rng = SeededRandom(seed: seed);
     sessionId = const Uuid().v4();
+    gameStartedAt = DateTime.now();
     
     // Clear all obstacles
     children.whereType<Log>().toList().forEach((log) => log.removeFromParent());
@@ -239,9 +250,16 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   void saveScore() async {
     // Show loading or disable button temporarily
     final result = await BackendService.saveScore(
-      name: 'Player', // Could be made configurable
-      score: score,
       sessionId: sessionId,
+      playerName: 'Player', // Could be made configurable
+      seed: seed,
+      startedAt: gameStartedAt ?? DateTime.now(),
+      endedAt: DateTime.now(),
+      finalScore: score,
+      gameDuration: gameTime,
+      maxSpeedReached: currentSpeed,
+      obstaclesAvoided: obstaclesAvoided,
+      liliesCollected: liliesCollected,
     );
     
     if (result != null) {

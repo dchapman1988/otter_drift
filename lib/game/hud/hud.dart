@@ -84,7 +84,7 @@ class Hud extends Component with HasGameReference {
 
     _gameOverText = TextComponent(
       text: 'Game Over!',
-      position: Vector2(game.size.x / 2 - 60, game.size.y / 2 - 60),
+      position: Vector2(game.size.x / 2 - 80, game.size.y / 2 - 80),
       textRenderer: TextPaint(
         style: const TextStyle(
           fontSize: 32,
