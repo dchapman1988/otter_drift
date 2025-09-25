@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'config.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
 

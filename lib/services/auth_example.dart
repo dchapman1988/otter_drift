@@ -1,26 +1,37 @@
 import 'backend.dart';
 import 'auth_service.dart';
+import 'security_config.dart';
+import 'secure_logger.dart';
 
 /// Example usage of the JWT authentication system
 class AuthExample {
   
   /// Example: Initialize authentication when the app starts
   static Future<void> initializeAuth() async {
-    print('Initializing authentication...');
+    SecureLogger.logInfo('Initializing authentication system');
+    
+    // Validate security configuration
+    try {
+      SecurityConfig.validateConfiguration();
+      SecureLogger.logInfo('Security configuration validated successfully');
+    } catch (e) {
+      SecureLogger.logError('Security configuration validation failed', error: e);
+      rethrow;
+    }
     
     // Check if already authenticated
     final isAuth = await BackendService.isAuthenticated();
     if (isAuth) {
-      print('Already authenticated');
+      SecureLogger.logInfo('Already authenticated');
       return;
     }
     
     // Authenticate if not already authenticated
     final authSuccess = await BackendService.authenticate();
     if (authSuccess) {
-      print('Authentication successful');
+      SecureLogger.logInfo('Authentication successful');
     } else {
-      print('Authentication failed');
+      SecureLogger.logError('Authentication failed');
     }
   }
 
@@ -65,14 +76,20 @@ class AuthExample {
   /// Example: Check authentication status
   static Future<void> checkAuthStatus() async {
     final isAuth = await BackendService.isAuthenticated();
-    print('Authentication status: $isAuth');
+    SecureLogger.logInfo('Authentication status: $isAuth');
     
     if (isAuth) {
       final tokenExpiration = await AuthService.getTokenExpiration();
-      print('Token expires at: $tokenExpiration');
+      SecureLogger.logInfo('Token expires at: $tokenExpiration');
       
       final isExpiringSoon = await AuthService.isTokenExpiringSoon();
-      print('Token expiring soon: $isExpiringSoon');
+      SecureLogger.logInfo('Token expiring soon: $isExpiringSoon');
+    }
+    
+    // Show environment info in debug mode
+    if (SecurityConfig.isDebugMode()) {
+      final envInfo = SecurityConfig.getEnvironmentInfo();
+      SecureLogger.logDebug('Environment information', data: envInfo);
     }
   }
 

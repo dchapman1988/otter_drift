@@ -1,49 +1,94 @@
 import 'package:dio/dio.dart';
-import 'config.dart';
+import 'security_config.dart';
 import 'auth_service.dart';
+import 'secure_logger.dart';
+import 'retry_service.dart';
+import 'certificate_pinning_service.dart';
 
 class ApiService {
   static late final Dio _dio;
 
   static void _initializeDio() {
+    final timeoutConfig = SecurityConfig.getTimeoutConfig();
+    
     _dio = Dio(BaseOptions(
-      baseUrl: baseUrl(),
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
+      baseUrl: SecurityConfig.getBaseUrl(),
+      connectTimeout: timeoutConfig.connectTimeout,
+      receiveTimeout: timeoutConfig.receiveTimeout,
+      sendTimeout: timeoutConfig.sendTimeout,
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
     ));
 
+    // Add certificate pinning interceptor
+    _dio.interceptors.add(CertificatePinningService.createPinningInterceptor());
+    
+    // Add retry interceptor
+    _dio.interceptors.add(RetryService.createRetryInterceptor());
+
     // Add interceptor to automatically include auth headers
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        // Ensure we have a valid token
-        if (!await AuthService.isAuthenticated()) {
-          final authSuccess = await AuthService.authenticate();
-          if (!authSuccess) {
-            handler.reject(DioException(
-              requestOptions: options,
-              error: 'Authentication failed',
-              type: DioExceptionType.unknown,
-            ));
-            return;
+        try {
+          SecureLogger.logRequest(
+            options.method, 
+            options.uri.toString(),
+            headers: options.headers,
+            body: options.data,
+          );
+          
+          // Ensure we have a valid token
+          if (!await AuthService.isAuthenticated()) {
+            SecureLogger.logAuth('No valid token found, attempting authentication');
+            final authSuccess = await AuthService.authenticate();
+            if (!authSuccess) {
+              SecureLogger.logError('Authentication failed during request');
+              handler.reject(DioException(
+                requestOptions: options,
+                error: 'Authentication failed',
+                type: DioExceptionType.unknown,
+              ));
+              return;
+            }
           }
-        }
 
-        // Add authorization header
-        final token = await AuthService.getToken();
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
+          // Add authorization header
+          final token = await AuthService.getToken();
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+            SecureLogger.logDebug('Added authorization header to request');
+          }
 
-        handler.next(options);
+          handler.next(options);
+        } catch (e) {
+          SecureLogger.logError('Error in request interceptor', error: e);
+          handler.reject(DioException(
+            requestOptions: options,
+            error: 'Request interceptor error: $e',
+            type: DioExceptionType.unknown,
+          ));
+        }
+      },
+      onResponse: (response, handler) async {
+        SecureLogger.logResponse(
+          response.statusCode ?? 0,
+          response.requestOptions.uri.toString(),
+          headers: response.headers.map,
+          body: response.data,
+        );
+        handler.next(response);
       },
       onError: (error, handler) async {
+        SecureLogger.logError(
+          'API request failed: ${error.requestOptions.method} ${error.requestOptions.uri}',
+          error: error,
+        );
+        
         // Handle 401 unauthorized responses
         if (error.response?.statusCode == 401) {
-          print('Received 401, attempting re-authentication...');
+          SecureLogger.logAuth('Received 401, attempting re-authentication');
           
           // Try to re-authenticate
           final reAuthSuccess = await AuthService.reAuthenticate();
@@ -54,11 +99,12 @@ class ApiService {
               error.requestOptions.headers['Authorization'] = 'Bearer $token';
               
               try {
+                SecureLogger.logAuth('Retrying request after successful re-authentication');
                 final response = await _dio.fetch(error.requestOptions);
                 handler.resolve(response);
                 return;
               } catch (retryError) {
-                print('Retry after re-authentication failed: $retryError');
+                SecureLogger.logError('Retry after re-authentication failed', error: retryError);
               }
             }
           }
@@ -163,17 +209,18 @@ class ApiService {
   /// Test authentication endpoint
   static Future<bool> testAuthentication() async {
     try {
+      SecureLogger.logAuth('Testing authentication endpoint');
+      
       final response = await dio.post('/api/v1/auth/login', data: {
-        'client_id': clientId(),
-        'api_key': apiKey(),
+        'client_id': SecurityConfig.getClientId(),
+        'api_key': SecurityConfig.getApiKey(),
       });
       
-      print('POST /api/v1/auth/login - Status: ${response.statusCode}');
-      print('Response: ${response.data}');
+      SecureLogger.logResponse(response.statusCode ?? 0, '/api/v1/auth/login', body: response.data);
       
       return response.statusCode == 200 && response.data != null;
     } catch (e) {
-      print('POST /api/v1/auth/login - Error: $e');
+      SecureLogger.logError('Authentication endpoint test failed', error: e);
       return false;
     }
   }

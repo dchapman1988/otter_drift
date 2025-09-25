@@ -1,8 +1,9 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import 'config.dart';
+import 'security_config.dart';
+import 'secure_logger.dart';
+import 'retry_service.dart';
 
 class AuthService {
   static const String _tokenKey = 'jwt_token';
@@ -21,17 +22,22 @@ class AuthService {
   static Future<bool> isAuthenticated() async {
     try {
       final token = await getToken();
-      if (token == null) return false;
+      if (token == null) {
+        SecureLogger.logDebug('No token found - user not authenticated');
+        return false;
+      }
       
       // Check if token is expired
       if (JwtDecoder.isExpired(token)) {
+        SecureLogger.logAuth('Token expired - clearing and marking as unauthenticated');
         await clearToken();
         return false;
       }
       
+      SecureLogger.logDebug('User is authenticated with valid token');
       return true;
     } catch (e) {
-      print('AuthService.isAuthenticated error: $e');
+      SecureLogger.logError('Error checking authentication status', error: e);
       return false;
     }
   }
@@ -67,41 +73,63 @@ class AuthService {
   /// Authenticate with the backend and store the JWT token
   static Future<bool> authenticate() async {
     try {
+      SecureLogger.logAuth('Starting authentication process');
+      
+      // Validate configuration before attempting authentication
+      SecurityConfig.validateConfiguration();
+      
+      final timeoutConfig = SecurityConfig.getTimeoutConfig();
       final dio = Dio(BaseOptions(
-        baseUrl: baseUrl(),
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
+        baseUrl: SecurityConfig.getBaseUrl(),
+        connectTimeout: timeoutConfig.connectTimeout,
+        receiveTimeout: timeoutConfig.receiveTimeout,
+        sendTimeout: timeoutConfig.sendTimeout,
       ));
 
-      final response = await dio.post('/api/v1/auth/login', data: {
-        'client_id': clientId(),
-        'api_key': apiKey(),
-      });
+      final authData = {
+        'client_id': SecurityConfig.getClientId(),
+        'api_key': SecurityConfig.getApiKey(),
+      };
+
+      SecureLogger.logRequest('POST', '/api/v1/auth/login', body: authData);
+
+      final response = await RetryService.executeDioRequestWithRetry(
+        () => dio.post('/api/v1/auth/login', data: authData),
+        operationName: 'authentication',
+      );
+
+      SecureLogger.logResponse(response.statusCode ?? 0, '/api/v1/auth/login', body: response.data);
 
       if (response.statusCode == 200 && response.data != null) {
         final token = response.data['token'] as String?;
         if (token != null && token.isNotEmpty) {
           await _storage.write(key: _tokenKey, value: token);
           _cachedToken = token;
-          print('Authentication successful');
+          
+          SecureLogger.logAuth('Authentication successful', data: {
+            'tokenLength': token.length,
+            'tokenExpiration': await getTokenExpiration(),
+          });
+          
           return true;
         }
       }
       
-      print('Authentication failed: Invalid response');
+      SecureLogger.logAuth('Authentication failed: Invalid response', data: {
+        'statusCode': response.statusCode,
+        'responseData': response.data,
+      });
+      
       return false;
     } catch (e) {
-      print('Authentication error: $e');
-      if (e is DioException) {
-        print('Status code: ${e.response?.statusCode}');
-        print('Response data: ${e.response?.data}');
-      }
+      SecureLogger.logError('Authentication failed', error: e);
       return false;
     }
   }
 
   /// Re-authenticate if the current token is expired or invalid
   static Future<bool> reAuthenticate() async {
+    SecureLogger.logAuth('Starting re-authentication process');
     await clearToken();
     return await authenticate();
   }
@@ -111,9 +139,9 @@ class AuthService {
     try {
       await _storage.delete(key: _tokenKey);
       _cachedToken = null;
-      print('Token cleared');
+      SecureLogger.logAuth('Token cleared from secure storage');
     } catch (e) {
-      print('AuthService.clearToken error: $e');
+      SecureLogger.logError('Failed to clear token', error: e);
     }
   }
 

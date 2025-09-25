@@ -39,6 +39,7 @@ dependencies:
   uuid: ^4.4.0
   flutter_secure_storage: ^9.2.2
   jwt_decoder: ^2.0.1
+  crypto: ^3.0.5
 
 dev_dependencies:
   flutter_test:
