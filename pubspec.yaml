@@ -37,6 +37,8 @@ dependencies:
   flame: ^1.32.0
   dio: ^5.7.0
   uuid: ^4.4.0
+  flutter_secure_storage: ^9.2.2
+  jwt_decoder: ^2.0.1
 
 dev_dependencies:
   flutter_test:
