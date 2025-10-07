@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'security_config.dart';
 import 'auth_service.dart';
+import 'player_auth_service.dart';
 import 'secure_logger.dart';
 import 'retry_service.dart';
 import 'certificate_pinning_service.dart';
@@ -39,26 +40,45 @@ class ApiService {
             body: options.data,
           );
           
-          // Ensure we have a valid token
-          if (!await AuthService.isAuthenticated()) {
-            SecureLogger.logAuth('No valid token found, attempting authentication');
-            final authSuccess = await AuthService.authenticate();
-            if (!authSuccess) {
-              SecureLogger.logError('Authentication failed during request');
-              handler.reject(DioException(
-                requestOptions: options,
-                error: 'Authentication failed',
-                type: DioExceptionType.unknown,
-              ));
-              return;
+          // Check if this is a player authentication endpoint
+          final isPlayerAuthEndpoint = options.uri.path.startsWith('/players');
+          final isPlayerSignUpOrSignIn = options.uri.path == '/players' || 
+                                         options.uri.path == '/players/sign_in';
+          
+          if (isPlayerAuthEndpoint) {
+            // For player sign up/sign in, don't add any auth headers
+            if (!isPlayerSignUpOrSignIn) {
+              // For other player endpoints, add player auth if available
+              if (await PlayerAuthService.isAuthenticated()) {
+                final token = await PlayerAuthService.getToken();
+                if (token != null) {
+                  options.headers['Authorization'] = 'Bearer $token';
+                  SecureLogger.logDebug('Added player authorization header to request');
+                }
+              }
             }
-          }
+          } else {
+            // For other endpoints, use system authentication
+            if (!await AuthService.isAuthenticated()) {
+              SecureLogger.logAuth('No valid system token found, attempting authentication');
+              final authSuccess = await AuthService.authenticate();
+              if (!authSuccess) {
+                SecureLogger.logError('System authentication failed during request');
+                handler.reject(DioException(
+                  requestOptions: options,
+                  error: 'System authentication failed',
+                  type: DioExceptionType.unknown,
+                ));
+                return;
+              }
+            }
 
-          // Add authorization header
-          final token = await AuthService.getToken();
-          if (token != null) {
-            options.headers['Authorization'] = 'Bearer $token';
-            SecureLogger.logDebug('Added authorization header to request');
+            // Add system authorization header
+            final token = await AuthService.getToken();
+            if (token != null) {
+              options.headers['Authorization'] = 'Bearer $token';
+              SecureLogger.logDebug('Added system authorization header to request');
+            }
           }
 
           handler.next(options);
@@ -90,33 +110,47 @@ class ApiService {
         if (error.response?.statusCode == 401) {
           SecureLogger.logAuth('Received 401, attempting re-authentication');
           
-          // Try to re-authenticate
-          final reAuthSuccess = await AuthService.reAuthenticate();
-          if (reAuthSuccess) {
-            // Retry the original request
-            final token = await AuthService.getToken();
-            if (token != null) {
-              error.requestOptions.headers['Authorization'] = 'Bearer $token';
-              
-              try {
-                SecureLogger.logAuth('Retrying request after successful re-authentication');
-                final response = await _dio.fetch(error.requestOptions);
-                handler.resolve(response);
-                return;
-              } catch (retryError) {
-                SecureLogger.logError('Retry after re-authentication failed', error: retryError);
+          final isPlayerAuthEndpoint = error.requestOptions.uri.path.startsWith('/players');
+          
+          if (isPlayerAuthEndpoint) {
+            // For player endpoints, clear player auth and let the user re-login
+            await PlayerAuthService.clearAuth();
+            handler.reject(DioException(
+              requestOptions: error.requestOptions,
+              error: 'Player authentication expired - please sign in again',
+              type: DioExceptionType.unknown,
+              response: error.response,
+            ));
+            return;
+          } else {
+            // For system endpoints, try to re-authenticate
+            final reAuthSuccess = await AuthService.reAuthenticate();
+            if (reAuthSuccess) {
+              // Retry the original request
+              final token = await AuthService.getToken();
+              if (token != null) {
+                error.requestOptions.headers['Authorization'] = 'Bearer $token';
+                
+                try {
+                  SecureLogger.logAuth('Retrying request after successful re-authentication');
+                  final response = await _dio.fetch(error.requestOptions);
+                  handler.resolve(response);
+                  return;
+                } catch (retryError) {
+                  SecureLogger.logError('Retry after re-authentication failed', error: retryError);
+                }
               }
             }
+            
+            // If re-authentication failed or retry failed, reject with auth error
+            handler.reject(DioException(
+              requestOptions: error.requestOptions,
+              error: 'System authentication failed - please check your credentials',
+              type: DioExceptionType.unknown,
+              response: error.response,
+            ));
+            return;
           }
-          
-          // If re-authentication failed or retry failed, reject with auth error
-          handler.reject(DioException(
-            requestOptions: error.requestOptions,
-            error: 'Authentication failed - please check your credentials',
-            type: DioExceptionType.unknown,
-            response: error.response,
-          ));
-          return;
         }
 
         handler.next(error);

@@ -11,12 +11,16 @@ import 'components/river_bg.dart';
 import 'hud/hud.dart';
 import '../services/backend.dart';
 import '../util/rng.dart';
+import '../models/player.dart';
 
 class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   late RiverBg _riverBg;
   late Otter _otter;
   late Hud _hud;
   late SeededRandom _rng;
+  
+  final Player? player;
+  final bool isGuestMode;
   
   int hearts = 3;
   int score = 0;
@@ -30,6 +34,11 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   DateTime? gameStartedAt;
   int obstaclesAvoided = 0;
   int liliesCollected = 0;
+
+  OtterGame({
+    this.player,
+    this.isGuestMode = false,
+  });
   
   @override
   Future<void> onLoad() async {
@@ -249,9 +258,11 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
 
   void saveScore() async {
     // Show loading or disable button temporarily
+    final playerName = player?.displayName ?? 'Guest Player';
+    
     final result = await BackendService.saveScore(
       sessionId: sessionId,
-      playerName: 'Player', // Could be made configurable
+      playerName: playerName,
       seed: seed,
       startedAt: gameStartedAt ?? DateTime.now(),
       endedAt: DateTime.now(),

@@ -26,22 +26,22 @@ class SecurityConfig {
 
   /// Get the client ID with validation
   static String getClientId() {
-    final clientId = _envClientId ?? _defaultClientId;
+    final clientId = (_envClientId != null && _envClientId!.isNotEmpty) ? _envClientId! : _defaultClientId;
     _validateClientId(clientId);
     return clientId;
   }
 
   /// Get the API key with validation
   static String getApiKey() {
-    if (_envApiKey == null || _envApiKey!.isEmpty) {
+    if (_envApiKey == null || _envApiKey!.trim().isEmpty) {
       throw SecurityException(
         'API_KEY environment variable is required. '
         'Use --dart-define=API_KEY=your_api_key_here when building.'
       );
     }
     
-    _validateApiKey(_envApiKey!);
-    return _envApiKey!;
+    _validateApiKey(_envApiKey!.trim());
+    return _envApiKey!.trim();
   }
 
   /// Get the base URL with validation
@@ -119,9 +119,9 @@ class SecurityConfig {
       'clientId': getClientId(),
       'maskedApiKey': getMaskedApiKey(),
       'baseUrl': getBaseUrl(),
-      'hasApiKey': _envApiKey != null && _envApiKey!.isNotEmpty,
-      'hasClientId': _envClientId != null && _envClientId!.isNotEmpty,
-      'hasBaseUrl': _envBaseUrl != null && _envBaseUrl!.isNotEmpty,
+      'hasApiKey': _envApiKey != null && _envApiKey!.trim().isNotEmpty,
+      'hasClientId': _envClientId != null && _envClientId!.trim().isNotEmpty,
+      'hasBaseUrl': _envBaseUrl != null && _envBaseUrl!.trim().isNotEmpty,
     };
   }
 

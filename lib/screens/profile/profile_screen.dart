@@ -1,0 +1,325 @@
+import 'package:flutter/material.dart';
+import '../../services/backend.dart';
+import '../../models/player.dart';
+import '../../services/auth_state_service.dart';
+
+class ProfileScreen extends StatefulWidget {
+  final Player player;
+  final VoidCallback onLogout;
+
+  const ProfileScreen({
+    Key? key,
+    required this.player,
+    required this.onLogout,
+  }) : super(key: key);
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  Player? _currentPlayer;
+  Map<String, dynamic>? _playerStats;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPlayer = widget.player;
+    _loadPlayerData();
+  }
+
+  Future<void> _loadPlayerData() async {
+    try {
+      final player = await BackendService.getPlayerProfile();
+      final stats = await BackendService.getPlayerStats();
+      
+      if (mounted) {
+        setState(() {
+          _currentPlayer = player ?? widget.player;
+          _playerStats = stats;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        title: const Text(
+          'Sign Out',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'Are you sure you want to sign out?',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white70),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              widget.onLogout();
+            },
+            child: const Text(
+              'Sign Out',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF1A1A2E),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Profile',
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          IconButton(
+            onPressed: _showLogoutDialog,
+            icon: const Icon(Icons.logout, color: Colors.red),
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
+              ),
+            )
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Profile Header
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundColor: Colors.white.withOpacity(0.2),
+                          child: Text(
+                            _currentPlayer?.displayName.substring(0, 1).toUpperCase() ?? 'P',
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          _currentPlayer?.displayName ?? 'Player',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '@${_currentPlayer?.username ?? 'username'}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white70,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _currentPlayer?.email ?? '',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Stats Section
+                  const Text(
+                    'Statistics',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Stats Cards
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard(
+                          'Total Score',
+                          '${_currentPlayer?.totalScore ?? 0}',
+                          Icons.star,
+                          const Color(0xFF4ECDC4),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildStatCard(
+                          'Games Played',
+                          '${_currentPlayer?.gamesPlayed ?? 0}',
+                          Icons.games,
+                          const Color(0xFF44A08D),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Additional Stats
+                  if (_playerStats != null) ...[
+                    _buildStatCard(
+                      'Best Score',
+                      '${_playerStats?['best_score'] ?? 0}',
+                      Icons.trending_up,
+                      const Color(0xFFE74C3C),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildStatCard(
+                      'Average Score',
+                      '${_playerStats?['average_score']?.toStringAsFixed(1) ?? '0.0'}',
+                      Icons.analytics,
+                      const Color(0xFF9B59B6),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildStatCard(
+                      'Total Play Time',
+                      '${_playerStats?['total_play_time'] ?? '0'} min',
+                      Icons.timer,
+                      const Color(0xFFF39C12),
+                    ),
+                  ],
+
+                  const SizedBox(height: 32),
+
+                  // Action Buttons
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        // TODO: Navigate to game history
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Game history coming soon!'),
+                            backgroundColor: Color(0xFF4ECDC4),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.history),
+                      label: const Text('Game History'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF4ECDC4),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        // TODO: Navigate to leaderboard
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Leaderboard coming soon!'),
+                            backgroundColor: Color(0xFF4ECDC4),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.leaderboard),
+                      label: const Text('Leaderboard'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF4ECDC4),
+                        side: const BorderSide(color: Color(0xFF4ECDC4)),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 32),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.white70,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
