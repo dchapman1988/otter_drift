@@ -55,31 +55,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A2E),
-        title: const Text(
-          'Sign Out',
-          style: TextStyle(color: Colors.white),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.white.withOpacity(0.2)),
         ),
-        content: const Text(
-          'Are you sure you want to sign out?',
-          style: TextStyle(color: Colors.white70),
+        title: Row(
+          children: [
+            const Icon(Icons.logout, color: Colors.red),
+            const SizedBox(width: 12),
+            const Text(
+              'Sign Out',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Are you sure you want to sign out?',
+              style: TextStyle(color: Colors.white70, fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Your progress is saved and will be available when you sign back in.',
+                      style: TextStyle(color: Colors.orange[200], fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white70),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white70,
             ),
+            child: const Text('Cancel'),
           ),
-          TextButton(
-            onPressed: () {
+          ElevatedButton.icon(
+            onPressed: () async {
               Navigator.pop(context);
+              Navigator.pop(context); // Close profile screen
               widget.onLogout();
             },
-            child: const Text(
-              'Sign Out',
-              style: TextStyle(color: Colors.red),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
+            icon: const Icon(Icons.logout, size: 18),
+            label: const Text('Sign Out'),
           ),
         ],
       ),
@@ -93,14 +136,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: const Text(
-          'Profile',
-          style: TextStyle(color: Colors.white),
+          'Player Profile',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
+            onPressed: _isLoading ? null : _loadPlayerData,
+            icon: const Icon(Icons.refresh, color: Color(0xFF4ECDC4)),
+            tooltip: 'Refresh',
+          ),
+          IconButton(
             onPressed: _showLogoutDialog,
             icon: const Icon(Icons.logout, color: Colors.red),
+            tooltip: 'Sign Out',
           ),
         ],
       ),
@@ -282,6 +335,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
+                  
+                  const SizedBox(height: 32),
+                  const Divider(color: Colors.white24),
+                  const SizedBox(height: 16),
+                  
+                  // Sign Out Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _showLogoutDialog,
+                      icon: const Icon(Icons.logout),
+                      label: const Text('Sign Out'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.withOpacity(0.2),
+                        foregroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),

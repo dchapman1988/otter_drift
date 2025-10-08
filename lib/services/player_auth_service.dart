@@ -127,7 +127,7 @@ class PlayerAuthService {
     try {
       SecureLogger.logAuth('Starting player sign up process');
       
-      final response = await ApiService.post('/players', data: {
+      final response = await ApiService.post('/players.json', data: {
         'player': {
           'email': email,
           'username': username,
@@ -169,14 +169,25 @@ class PlayerAuthService {
       if (e is DioException) {
         final response = e.response;
         if (response?.statusCode == 422) {
+          // Log the full response for debugging
+          SecureLogger.logError('422 Validation Error Response', error: response?.data);
+          
           final errors = response?.data['errors'] as Map<String, dynamic>?;
+          final message = response?.data['message'] as String?;
+          final error = response?.data['error'] as String?;
+          
           return AuthResult.failure(
-            message: 'Validation failed',
+            message: message ?? error ?? 'Validation failed',
             errors: errors,
           );
         }
+        // Log other error responses
+        SecureLogger.logError('Sign up error response', error: response?.data);
+        
         return AuthResult.failure(
-          message: response?.data['message'] ?? 'Sign up failed',
+          message: response?.data['message'] as String? ?? 
+                   response?.data['error'] as String? ?? 
+                   'Sign up failed',
         );
       }
       return AuthResult.failure(message: 'Network error occurred');
@@ -191,7 +202,7 @@ class PlayerAuthService {
     try {
       SecureLogger.logAuth('Starting player sign in process');
       
-      final response = await ApiService.post('/players/sign_in', data: {
+      final response = await ApiService.post('/players/sign_in.json', data: {
         'player': {
           'email': email,
           'password': password,
@@ -199,6 +210,7 @@ class PlayerAuthService {
       });
 
       SecureLogger.logResponse(response.statusCode ?? 0, '/players/sign_in', body: response.data);
+      SecureLogger.logDebug('Response headers: ${response.headers.map}');
 
       if (response.statusCode == 200) {
         final token = _extractTokenFromResponse(response);
@@ -209,8 +221,15 @@ class PlayerAuthService {
           SecureLogger.logAuth('Player sign in successful', data: {
             'playerId': player.id,
             'username': player.username,
+            'tokenLength': token.length,
           });
           return AuthResult.success(player: player);
+        } else if (player == null) {
+          SecureLogger.logError('Failed to extract player from response');
+          return AuthResult.failure(message: 'Invalid player data received');
+        } else {
+          SecureLogger.logError('Failed to extract JWT token from response');
+          return AuthResult.failure(message: 'No authentication token received');
         }
       }
 
@@ -236,7 +255,7 @@ class PlayerAuthService {
       
       // Call the backend sign out endpoint
       try {
-        await ApiService.delete('/players/sign_out');
+        await ApiService.delete('/players/sign_out.json');
         SecureLogger.logAuth('Backend sign out successful');
       } catch (e) {
         // Even if backend call fails, we should clear local auth
@@ -287,15 +306,41 @@ class PlayerAuthService {
 
   /// Extract JWT token from response headers or body
   static String? _extractTokenFromResponse(Response response) {
-    // Check Authorization header first
-    final authHeader = response.headers['authorization']?.first;
-    if (authHeader != null && authHeader.startsWith('Bearer ')) {
-      return authHeader.substring(7);
+    // The token is in the Authorization response header
+    // Rails devise-jwt sends it as: "Bearer <token>"
+    
+    // Try to get authorization header (Dio lowercases header names)
+    final authHeader = response.headers.value('authorization');
+    
+    if (authHeader != null) {
+      SecureLogger.logDebug('Found authorization header: ${authHeader.substring(0, 20)}...');
+      
+      if (authHeader.startsWith('Bearer ')) {
+        final token = authHeader.substring(7).trim();
+        SecureLogger.logAuth('Successfully extracted JWT token from Authorization header');
+        return token;
+      } else if (authHeader.startsWith('bearer ')) {
+        final token = authHeader.substring(7).trim();
+        SecureLogger.logAuth('Successfully extracted JWT token from authorization header (lowercase)');
+        return token;
+      } else {
+        // Token without Bearer prefix
+        SecureLogger.logAuth('Found token without Bearer prefix');
+        return authHeader.trim();
+      }
     }
 
-    // Check response body
+    // Fallback: Check response body
     final data = response.data as Map<String, dynamic>?;
-    return data?['token'] as String?;
+    final token = data?['token'] as String? ?? data?['jwt'] as String?;
+    if (token != null) {
+      SecureLogger.logDebug('Found token in response body');
+      return token;
+    }
+    
+    SecureLogger.logError('No JWT token found in response');
+    SecureLogger.logDebug('Available headers: ${response.headers.map.keys.toList()}');
+    return null;
   }
 
   /// Extract player data from response

@@ -40,44 +40,45 @@ class ApiService {
             body: options.data,
           );
           
-          // Check if this is a player authentication endpoint
-          final isPlayerAuthEndpoint = options.uri.path.startsWith('/players');
+          // Check if this is a player authentication endpoint (sign up/sign in)
           final isPlayerSignUpOrSignIn = options.uri.path == '/players' || 
-                                         options.uri.path == '/players/sign_in';
+                                         options.uri.path == '/players.json' ||
+                                         options.uri.path == '/players/sign_in' ||
+                                         options.uri.path == '/players/sign_in.json';
           
-          if (isPlayerAuthEndpoint) {
-            // For player sign up/sign in, don't add any auth headers
-            if (!isPlayerSignUpOrSignIn) {
-              // For other player endpoints, add player auth if available
-              if (await PlayerAuthService.isAuthenticated()) {
-                final token = await PlayerAuthService.getToken();
-                if (token != null) {
-                  options.headers['Authorization'] = 'Bearer $token';
-                  SecureLogger.logDebug('Added player authorization header to request');
+          // Don't add auth headers for sign up/sign in
+          if (isPlayerSignUpOrSignIn) {
+            SecureLogger.logDebug('Skipping auth for sign up/sign in endpoint');
+          } else {
+            // For all other endpoints, check if player is authenticated
+            if (await PlayerAuthService.isAuthenticated()) {
+              final token = await PlayerAuthService.getToken();
+              if (token != null) {
+                options.headers['Authorization'] = 'Bearer $token';
+                SecureLogger.logDebug('Added player JWT token to Authorization header');
+              }
+            } else {
+              // Fallback to system authentication if player not authenticated
+              if (!await AuthService.isAuthenticated()) {
+                SecureLogger.logAuth('No valid system token found, attempting authentication');
+                final authSuccess = await AuthService.authenticate();
+                if (!authSuccess) {
+                  SecureLogger.logError('System authentication failed during request');
+                  handler.reject(DioException(
+                    requestOptions: options,
+                    error: 'System authentication failed',
+                    type: DioExceptionType.unknown,
+                  ));
+                  return;
                 }
               }
-            }
-          } else {
-            // For other endpoints, use system authentication
-            if (!await AuthService.isAuthenticated()) {
-              SecureLogger.logAuth('No valid system token found, attempting authentication');
-              final authSuccess = await AuthService.authenticate();
-              if (!authSuccess) {
-                SecureLogger.logError('System authentication failed during request');
-                handler.reject(DioException(
-                  requestOptions: options,
-                  error: 'System authentication failed',
-                  type: DioExceptionType.unknown,
-                ));
-                return;
-              }
-            }
 
-            // Add system authorization header
-            final token = await AuthService.getToken();
-            if (token != null) {
-              options.headers['Authorization'] = 'Bearer $token';
-              SecureLogger.logDebug('Added system authorization header to request');
+              // Add system authorization header
+              final token = await AuthService.getToken();
+              if (token != null) {
+                options.headers['Authorization'] = 'Bearer $token';
+                SecureLogger.logDebug('Added system authorization header to request');
+              }
             }
           }
 

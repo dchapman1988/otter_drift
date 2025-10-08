@@ -141,6 +141,9 @@ class PlayerApiService {
       
       final currentPlayer = await PlayerAuthService.getCurrentPlayer();
       
+      // Build game session data
+      // NOTE: Do NOT include player_id - the Rails backend will set this automatically
+      // from the JWT token in the Authorization header
       final gameSessionData = <String, dynamic>{
         'session_id': sessionId,
         'seed': seed,
@@ -153,9 +156,8 @@ class PlayerApiService {
         'lilies_collected': liliesCollected,
       };
 
-      // Add player information if authenticated
+      // Add player_name for display purposes (optional, server may use player from JWT)
       if (currentPlayer != null) {
-        gameSessionData['player_id'] = currentPlayer.id;
         gameSessionData['player_name'] = currentPlayer.displayName;
       }
 

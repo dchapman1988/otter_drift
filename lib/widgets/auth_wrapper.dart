@@ -4,6 +4,7 @@ import '../services/auth_state_service.dart';
 import '../models/player.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/menu/main_menu_screen.dart';
 import '../game/otter_game.dart';
 
 class AuthWrapper extends StatefulWidget {
@@ -41,7 +42,23 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   void _onLogout() async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
+        ),
+      ),
+    );
+    
     await _authStateService.onLogout();
+    
+    // Close loading indicator
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -82,7 +99,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 
           case AuthState.authenticated:
           case AuthState.guest:
-            return OtterGameWrapper(
+            return MainMenuWrapper(
               authStateService: _authStateService,
               onLogout: _onLogout,
             );
@@ -104,15 +121,29 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 }
 
-class OtterGameWrapper extends StatelessWidget {
+class MainMenuWrapper extends StatelessWidget {
   final AuthStateService authStateService;
   final VoidCallback onLogout;
 
-  const OtterGameWrapper({
+  const MainMenuWrapper({
     Key? key,
     required this.authStateService,
     required this.onLogout,
   }) : super(key: key);
+
+  void _startGame(BuildContext context, Player? player, bool isGuest) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GameScreen(
+          player: player,
+          isGuestMode: isGuest,
+          authStateService: authStateService,
+          onLogout: onLogout,
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,84 +154,38 @@ class OtterGameWrapper extends StatelessWidget {
         final player = snapshot.data;
         final isGuest = authStateService.isGuestMode;
 
-        return Scaffold(
-          body: Stack(
-            children: [
-              // Game
-              GameWidget<OtterGame>.controlled(
-                gameFactory: () => OtterGame(
-                  player: player,
-                  isGuestMode: isGuest,
-                ),
-              ),
-              
-              // Auth status indicator
-              Positioned(
-                top: 50,
-                right: 20,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isGuest ? Colors.orange : const Color(0xFF4ECDC4),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      GestureDetector(
-                        onTap: !isGuest ? () => _showProfile(context) : null,
-                        child: Icon(
-                          isGuest ? Icons.person_outline : Icons.person,
-                          color: isGuest ? Colors.orange : const Color(0xFF4ECDC4),
-                          size: 16,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      GestureDetector(
-                        onTap: !isGuest ? () => _showProfile(context) : null,
-                        child: Text(
-                          isGuest ? 'Guest' : (player?.displayName ?? 'Player'),
-                          style: TextStyle(
-                            color: isGuest ? Colors.orange : const Color(0xFF4ECDC4),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      if (!isGuest) ...[
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () => _showLogoutDialog(context),
-                          child: const Icon(
-                            Icons.logout,
-                            color: Colors.red,
-                            size: 16,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+        return MainMenuScreen(
+          player: player,
+          isGuestMode: isGuest,
+          onStartGame: () => _startGame(context, player, isGuest),
+          onLogout: onLogout,
         );
       },
     );
   }
+}
+
+class GameScreen extends StatelessWidget {
+  final Player? player;
+  final bool isGuestMode;
+  final AuthStateService authStateService;
+  final VoidCallback onLogout;
+
+  const GameScreen({
+    Key? key,
+    this.player,
+    required this.isGuestMode,
+    required this.authStateService,
+    required this.onLogout,
+  }) : super(key: key);
 
   void _showProfile(BuildContext context) {
-    final player = authStateService.currentPlayer;
     if (player != null) {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ProfileScreen(
-            player: player,
+            player: player!,
             onLogout: onLogout,
           ),
         ),
@@ -208,35 +193,129 @@ class OtterGameWrapper extends StatelessWidget {
     }
   }
 
-  void _showLogoutDialog(BuildContext context) {
+  void _showPauseMenu(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.white.withOpacity(0.2)),
+        ),
         title: const Text(
-          'Sign Out',
-          style: TextStyle(color: Colors.white),
+          'Paused',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
         ),
-        content: const Text(
-          'Are you sure you want to sign out?',
-          style: TextStyle(color: Colors.white70),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4ECDC4),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Resume'),
+              ),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close dialog
+                  Navigator.pop(context); // Return to menu
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white70,
+                  side: const BorderSide(color: Colors.white38),
+                ),
+                child: const Text('Main Menu'),
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: Colors.white70),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Game
+          GameWidget<OtterGame>.controlled(
+            gameFactory: () => OtterGame(
+              player: player,
+              isGuestMode: isGuestMode,
             ),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              onLogout();
-            },
-            child: const Text(
-              'Sign Out',
-              style: TextStyle(color: Colors.red),
+          
+          // Top bar with player info and menu button
+          Positioned(
+            top: 40,
+            left: 20,
+            right: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Menu button
+                GestureDetector(
+                  onTap: () => _showPauseMenu(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: const Icon(
+                      Icons.menu,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+                
+                // Player indicator
+                GestureDetector(
+                  onTap: !isGuestMode ? () => _showProfile(context) : null,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isGuestMode ? Colors.orange : const Color(0xFF4ECDC4),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isGuestMode ? Icons.person_outline : Icons.person,
+                          color: isGuestMode ? Colors.orange : const Color(0xFF4ECDC4),
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          isGuestMode ? 'Guest' : (player?.displayName ?? 'Player'),
+                          style: TextStyle(
+                            color: isGuestMode ? Colors.orange : const Color(0xFF4ECDC4),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
