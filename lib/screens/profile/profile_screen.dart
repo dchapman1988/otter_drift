@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/backend.dart';
 import '../../models/player.dart';
 import '../../services/auth_state_service.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Player player;
@@ -50,11 +51,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  void _showEditProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProfileScreen(
+          player: _currentPlayer ?? widget.player,
+          onProfileUpdated: (updatedPlayer) {
+            setState(() {
+              _currentPlayer = updatedPlayer;
+            });
+          },
+        ),
+      ),
+    );
+  }
+
   void _showLogoutDialog() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: const Color(0xFF2C1B15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: Colors.white.withOpacity(0.2)),
@@ -132,7 +149,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: const Color(0xFF2C1B15),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -145,6 +162,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         actions: [
+          IconButton(
+            onPressed: () => _showEditProfile(),
+            icon: const Icon(Icons.edit, color: Color(0xFF4ECDC4)),
+            tooltip: 'Edit Profile',
+          ),
           IconButton(
             onPressed: _isLoading ? null : _loadPlayerData,
             icon: const Icon(Icons.refresh, color: Color(0xFF4ECDC4)),
@@ -285,6 +307,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   const SizedBox(height: 32),
 
+                  // Profile Information Section
+                  if (_currentPlayer?.profile != null && !_currentPlayer!.profile!.isEmpty) ...[
+                    const Text(
+                      'Profile Information',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Bio
+                    if (_currentPlayer!.profile!.bio?.isNotEmpty == true) ...[
+                      _buildProfileSection(
+                        'Bio',
+                        _currentPlayer!.profile!.bio!,
+                        Icons.person,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Title
+                    if (_currentPlayer!.profile!.title?.isNotEmpty == true) ...[
+                      _buildProfileSection(
+                        'Title',
+                        _currentPlayer!.profile!.title!,
+                        Icons.work,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Location
+                    if (_currentPlayer!.profile!.location?.isNotEmpty == true) ...[
+                      _buildProfileSection(
+                        'Location',
+                        _currentPlayer!.profile!.location!,
+                        Icons.location_on,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // Favorite Otter Fact
+                    if (_currentPlayer!.profile!.favoriteOtterFact?.isNotEmpty == true) ...[
+                      _buildProfileSection(
+                        'Favorite Otter Fact',
+                        _currentPlayer!.profile!.favoriteOtterFact!,
+                        Icons.favorite,
+                        color: const Color(0xFFE74C3C),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+
+                    const SizedBox(height: 16),
+                  ],
+
                   // Action Buttons
                   SizedBox(
                     width: double.infinity,
@@ -393,6 +471,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: Colors.white70,
             ),
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileSection(String title, String content, IconData icon, {Color? color}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                color: color ?? const Color(0xFF4ECDC4),
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            content,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.white,
+              height: 1.4,
+            ),
           ),
         ],
       ),

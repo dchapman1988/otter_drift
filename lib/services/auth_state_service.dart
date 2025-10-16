@@ -48,7 +48,7 @@ class AuthStateService {
 
   /// Update authentication state
   void _updateState(AuthState state, Player? player) {
-    SecureLogger.logDebug('AuthStateService: Updating state to $state');
+    SecureLogger.logDebug('AuthStateService: Updating state to $state with player: ${player?.username ?? "null"}');
     _currentState = state;
     _currentPlayer = player;
     _authStateController.add(state);
@@ -57,6 +57,7 @@ class AuthStateService {
 
   /// Handle successful login/signup
   void onAuthSuccess(Player player) {
+    SecureLogger.logDebug('AuthStateService: onAuthSuccess called with player: ${player.username}');
     _updateState(AuthState.authenticated, player);
   }
 

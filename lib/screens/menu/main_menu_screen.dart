@@ -19,7 +19,9 @@ class MainMenuScreen extends StatelessWidget {
   }) : super(key: key);
 
   void _showProfile(BuildContext context) {
+    print('DEBUG: _showProfile called, player: $player');
     if (player != null) {
+      print('DEBUG: Navigating to ProfileScreen');
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -29,6 +31,8 @@ class MainMenuScreen extends StatelessWidget {
           ),
         ),
       );
+    } else {
+      print('DEBUG: Player is null, cannot show profile');
     }
   }
 
@@ -36,7 +40,7 @@ class MainMenuScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: const Color(0xFF2C1B15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: Colors.white.withOpacity(0.2)),
@@ -84,7 +88,7 @@ class MainMenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: const Color(0xFF2C1B15),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -93,10 +97,11 @@ class MainMenuScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Logo/Title Section
-              const Icon(
-                Icons.pets,
-                size: 100,
-                color: Color(0xFF4ECDC4),
+              Image.asset(
+                'assets/images/logos/otter_logo.png',
+                width: 100,
+                height: 100,
+                fit: BoxFit.contain,
               ),
               const SizedBox(height: 24),
               const Text(
@@ -115,7 +120,7 @@ class MainMenuScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
-                  color: isGuestMode ? Colors.orange : const Color(0xFF4ECDC4),
+                  color: isGuestMode ? Colors.orange : const Color(0xFF66A0C8),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -155,14 +160,14 @@ class MainMenuScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4ECDC4),
+                  backgroundColor: const Color(0xFF7B5E4F),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 8,
-                  shadowColor: const Color(0xFF4ECDC4).withOpacity(0.5),
+                  shadowColor: const Color(0xFF7B5E4F).withOpacity(0.5),
                 ),
               ),
               const SizedBox(height: 16),
@@ -170,15 +175,18 @@ class MainMenuScreen extends StatelessWidget {
               // Profile Button (only for authenticated users)
               if (!isGuestMode) ...[
                 OutlinedButton.icon(
-                  onPressed: () => _showProfile(context),
+                  onPressed: () {
+                    print('DEBUG: Profile button pressed');
+                    _showProfile(context);
+                  },
                   icon: const Icon(Icons.person),
                   label: const Text(
                     'My Profile',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF4ECDC4),
-                    side: const BorderSide(color: Color(0xFF4ECDC4), width: 2),
+                    foregroundColor: const Color(0xFF66A0C8),
+                    side: const BorderSide(color: Color(0xFF66A0C8), width: 2),
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -194,7 +202,7 @@ class MainMenuScreen extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Leaderboard coming soon!'),
-                      backgroundColor: Color(0xFF4ECDC4),
+                      backgroundColor: Color(0xFF66A0C8),
                       behavior: SnackBarBehavior.floating,
                     ),
                   );
@@ -242,7 +250,7 @@ class MainMenuScreen extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                        backgroundColor: const Color(0xFF1A1A2E),
+                        backgroundColor: const Color(0xFF2C1B15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                           side: BorderSide(color: Colors.white.withOpacity(0.2)),
@@ -303,7 +311,7 @@ class MainMenuScreen extends StatelessWidget {
   Widget _buildQuickStat(String label, String value, IconData icon) {
     return Column(
       children: [
-        Icon(icon, color: const Color(0xFF4ECDC4), size: 24),
+        Icon(icon, color: const Color(0xFF66A0C8), size: 24),
         const SizedBox(height: 8),
         Text(
           value,

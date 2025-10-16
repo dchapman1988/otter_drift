@@ -1,3 +1,5 @@
+import 'player_profile.dart';
+
 class Player {
   final int id;
   final String email;
@@ -5,6 +7,8 @@ class Player {
   final String displayName;
   final int totalScore;
   final int gamesPlayed;
+  final String? avatarUrl;
+  final PlayerProfile? profile;
 
   const Player({
     required this.id,
@@ -13,6 +17,8 @@ class Player {
     required this.displayName,
     required this.totalScore,
     required this.gamesPlayed,
+    this.avatarUrl,
+    this.profile,
   });
 
   factory Player.fromJson(Map<String, dynamic> json) {
@@ -23,6 +29,10 @@ class Player {
       displayName: json['display_name'] as String? ?? json['username'] as String,
       totalScore: json['total_score'] as int? ?? 0,
       gamesPlayed: json['games_played'] as int? ?? 0,
+      avatarUrl: json['avatar_url'] as String?,
+      profile: json['profile'] is Map<String, dynamic> 
+          ? PlayerProfile.fromJson(json['profile'] as Map<String, dynamic>) 
+          : null,
     );
   }
 
@@ -34,6 +44,8 @@ class Player {
       'display_name': displayName,
       'total_score': totalScore,
       'games_played': gamesPlayed,
+      'avatar_url': avatarUrl,
+      'profile': profile?.toJson(),
     };
   }
 
@@ -44,6 +56,8 @@ class Player {
     String? displayName,
     int? totalScore,
     int? gamesPlayed,
+    String? avatarUrl,
+    PlayerProfile? profile,
   }) {
     return Player(
       id: id ?? this.id,
@@ -52,12 +66,14 @@ class Player {
       displayName: displayName ?? this.displayName,
       totalScore: totalScore ?? this.totalScore,
       gamesPlayed: gamesPlayed ?? this.gamesPlayed,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      profile: profile ?? this.profile,
     );
   }
 
   @override
   String toString() {
-    return 'Player(id: $id, email: $email, username: $username, displayName: $displayName, totalScore: $totalScore, gamesPlayed: $gamesPlayed)';
+    return 'Player(id: $id, email: $email, username: $username, displayName: $displayName, totalScore: $totalScore, gamesPlayed: $gamesPlayed, avatarUrl: $avatarUrl, profile: $profile)';
   }
 
   @override
@@ -69,7 +85,9 @@ class Player {
         other.username == username &&
         other.displayName == displayName &&
         other.totalScore == totalScore &&
-        other.gamesPlayed == gamesPlayed;
+        other.gamesPlayed == gamesPlayed &&
+        other.avatarUrl == avatarUrl &&
+        other.profile == profile;
   }
 
   @override
@@ -79,7 +97,9 @@ class Player {
         username.hashCode ^
         displayName.hashCode ^
         totalScore.hashCode ^
-        gamesPlayed.hashCode;
+        gamesPlayed.hashCode ^
+        avatarUrl.hashCode ^
+        profile.hashCode;
   }
 }
 

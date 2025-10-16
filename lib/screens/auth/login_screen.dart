@@ -47,6 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (result.isSuccess && result.player != null) {
+        print('DEBUG: Login successful, calling onLoginSuccess with player: ${result.player!.username}');
         widget.onLoginSuccess(result.player!);
       } else {
         setState(() {
@@ -79,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: const Color(0xFF2C1B15),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -90,10 +91,11 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Logo/Title
-                const Icon(
-                  Icons.pets,
-                  size: 80,
-                  color: Color(0xFF4ECDC4),
+                Image.asset(
+                  'assets/images/logos/otter_logo.png',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -122,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email, color: Color(0xFF4ECDC4)),
+                    prefixIcon: const Icon(Icons.email, color: Color(0xFF66A0C8)),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -152,11 +154,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock, color: Color(0xFF4ECDC4)),
+                    prefixIcon: const Icon(Icons.lock, color: Color(0xFF66A0C8)),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                        color: const Color(0xFF4ECDC4),
+                        color: const Color(0xFF66A0C8),
                       ),
                       onPressed: () {
                         setState(() {
@@ -207,7 +209,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _signIn,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4ECDC4),
+                    backgroundColor: const Color(0xFF7B5E4F),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -268,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: const Text(
                         'Sign Up',
                         style: TextStyle(
-                          color: Color(0xFF4ECDC4),
+                          color: Color(0xFF66A0C8),
                           fontWeight: FontWeight.bold,
                         ),
                       ),

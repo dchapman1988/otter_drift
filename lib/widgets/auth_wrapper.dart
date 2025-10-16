@@ -34,6 +34,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   void _onLoginSuccess(Player player) {
+    print('DEBUG: AuthWrapper _onLoginSuccess called with player: ${player.username}');
     _authStateService.onAuthSuccess(player);
   }
 
@@ -65,7 +66,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Widget build(BuildContext context) {
     if (!_isInitialized) {
       return const Scaffold(
-        backgroundColor: Color(0xFF1A1A2E),
+        backgroundColor: Color(0xFF2C1B15),
         body: Center(
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
@@ -83,7 +84,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
         switch (authState) {
           case AuthState.unknown:
             return const Scaffold(
-              backgroundColor: Color(0xFF1A1A2E),
+              backgroundColor: Color(0xFF2C1B15),
               body: Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
@@ -153,6 +154,9 @@ class MainMenuWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         final player = snapshot.data;
         final isGuest = authStateService.isGuestMode;
+        
+        print('DEBUG: MainMenuWrapper - player: ${player?.username ?? "null"}, isGuest: $isGuest');
+        print('DEBUG: MainMenuWrapper - snapshot.hasData: ${snapshot.hasData}, snapshot.data: ${snapshot.data?.username ?? "null"}');
 
         return MainMenuScreen(
           player: player,
@@ -197,7 +201,7 @@ class GameScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: const Color(0xFF2C1B15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: Colors.white.withOpacity(0.2)),

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../models/player.dart';
+import '../models/player_profile.dart';
 import 'api_service.dart';
 import 'player_auth_service.dart';
 import 'secure_logger.dart';
@@ -10,7 +11,7 @@ class PlayerApiService {
     try {
       SecureLogger.logDebug('Fetching player profile');
       
-      final response = await ApiService.get('/players/profile');
+      final response = await ApiService.get('/players/profile.json');
       
       if (response.statusCode == 200) {
         final playerData = response.data['player'] as Map<String, dynamic>? ??
@@ -40,17 +41,27 @@ class PlayerApiService {
   static Future<Player?> updatePlayerProfile({
     String? username,
     String? displayName,
+    String? avatarUrl,
+    PlayerProfile? profile,
   }) async {
     try {
       SecureLogger.logDebug('Updating player profile');
       
-      final updateData = <String, dynamic>{};
-      if (username != null) updateData['username'] = username;
-      if (displayName != null) updateData['display_name'] = displayName;
+      final playerData = <String, dynamic>{};
+      if (username != null) playerData['username'] = username;
+      if (displayName != null) playerData['display_name'] = displayName;
+      if (avatarUrl != null) playerData['avatar_url'] = avatarUrl;
       
-      final response = await ApiService.put('/players/profile', data: {
-        'player': updateData,
-      });
+      final requestData = <String, dynamic>{
+        'player': playerData,
+      };
+      
+      // Add profile data nested under player if provided
+      if (profile != null) {
+        playerData['profile'] = profile.toJson();
+      }
+      
+      final response = await ApiService.put('/players/profile.json', data: requestData);
       
       if (response.statusCode == 200) {
         final playerData = response.data['player'] as Map<String, dynamic>? ??

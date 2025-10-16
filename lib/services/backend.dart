@@ -4,6 +4,7 @@ import 'auth_service.dart';
 import 'player_auth_service.dart';
 import 'player_api_service.dart';
 import '../models/player.dart';
+import '../models/player_profile.dart';
 
 class BackendService {
 
@@ -164,10 +165,14 @@ class BackendService {
   static Future<Player?> updatePlayerProfile({
     String? username,
     String? displayName,
+    String? avatarUrl,
+    PlayerProfile? profile,
   }) async {
     return await PlayerApiService.updatePlayerProfile(
       username: username,
       displayName: displayName,
+      avatarUrl: avatarUrl,
+      profile: profile,
     );
   }
 
