@@ -48,6 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result.isSuccess && result.player != null) {
         print('DEBUG: Login successful, calling onLoginSuccess with player: ${result.player!.username}');
+        print('DEBUG: Login result details: isSuccess=${result.isSuccess}, player=${result.player != null}');
         widget.onLoginSuccess(result.player!);
       } else {
         setState(() {

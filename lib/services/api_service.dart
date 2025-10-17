@@ -40,6 +40,11 @@ class ApiService {
             body: options.data,
           );
           
+          // Log authorization header specifically for debugging
+          if (options.headers['Authorization'] != null) {
+            SecureLogger.logDebug('Authorization header being sent: ${options.headers['Authorization']}');
+          }
+          
           // Check if this is a player authentication endpoint (sign up/sign in)
           final isPlayerSignUpOrSignIn = options.uri.path == '/players' || 
                                          options.uri.path == '/players.json' ||
@@ -54,31 +59,16 @@ class ApiService {
             if (await PlayerAuthService.isAuthenticated()) {
               final token = await PlayerAuthService.getToken();
               if (token != null) {
-                options.headers['Authorization'] = 'Bearer $token';
-                SecureLogger.logDebug('Added player JWT token to Authorization header');
+                options.headers['Authorization'] = 'Bearer $token'; // Add "Bearer " prefix back
+                SecureLogger.logDebug('Added player JWT token to Authorization header (length: ${token.length})');
+                SecureLogger.logDebug('Token preview: ${token.substring(0, token.length > 20 ? 20 : token.length)}...');
+              } else {
+                SecureLogger.logError('Player is authenticated but token is null');
               }
             } else {
-              // Fallback to system authentication if player not authenticated
-              if (!await AuthService.isAuthenticated()) {
-                SecureLogger.logAuth('No valid system token found, attempting authentication');
-                final authSuccess = await AuthService.authenticate();
-                if (!authSuccess) {
-                  SecureLogger.logError('System authentication failed during request');
-                  handler.reject(DioException(
-                    requestOptions: options,
-                    error: 'System authentication failed',
-                    type: DioExceptionType.unknown,
-                  ));
-                  return;
-                }
-              }
-
-              // Add system authorization header
-              final token = await AuthService.getToken();
-              if (token != null) {
-                options.headers['Authorization'] = 'Bearer $token';
-                SecureLogger.logDebug('Added system authorization header to request');
-              }
+              // For player endpoints, only use player JWT authentication
+              // No fallback to system authentication for player-specific endpoints
+              SecureLogger.logDebug('Player not authenticated - request will be unauthorized');
             }
           }
 

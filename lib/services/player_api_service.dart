@@ -11,18 +11,17 @@ class PlayerApiService {
     try {
       SecureLogger.logDebug('Fetching player profile');
       
-      final response = await ApiService.get('/players/profile.json');
+      final response = await ApiService.get('/api/v1/players/profile');
       
       if (response.statusCode == 200) {
         final playerData = response.data['player'] as Map<String, dynamic>? ??
                           response.data as Map<String, dynamic>;
         final player = Player.fromJson(playerData);
         
-        // Update cached player data
-        await PlayerAuthService.clearAuth();
+        // Update cached player data without clearing the JWT token
         final token = await PlayerAuthService.getToken();
         if (token != null) {
-          // Re-store with updated player data
+          // Re-store with updated player data (keeping the same token)
           await _storeAuthData(token, player);
         }
         
@@ -61,15 +60,14 @@ class PlayerApiService {
         playerData['profile'] = profile.toJson();
       }
       
-      final response = await ApiService.put('/players/profile.json', data: requestData);
+      final response = await ApiService.put('/api/v1/players/profile', data: requestData);
       
       if (response.statusCode == 200) {
         final playerData = response.data['player'] as Map<String, dynamic>? ??
                           response.data as Map<String, dynamic>;
         final player = Player.fromJson(playerData);
         
-        // Update cached player data
-        await PlayerAuthService.clearAuth();
+        // Update cached player data without clearing the JWT token
         final token = await PlayerAuthService.getToken();
         if (token != null) {
           await _storeAuthData(token, player);
@@ -91,7 +89,7 @@ class PlayerApiService {
     try {
       SecureLogger.logDebug('Fetching player statistics');
       
-      final response = await ApiService.get('/players/stats');
+      final response = await ApiService.get('/api/v1/players/stats');
       
       if (response.statusCode == 200) {
         SecureLogger.logDebug('Player statistics fetched successfully');
@@ -113,7 +111,7 @@ class PlayerApiService {
     try {
       SecureLogger.logDebug('Fetching player game history');
       
-      final response = await ApiService.get('/players/game_history', queryParameters: {
+      final response = await ApiService.get('/api/v1/players/game_history', queryParameters: {
         'limit': limit,
         'offset': offset,
       });

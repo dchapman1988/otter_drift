@@ -58,7 +58,10 @@ class AuthStateService {
   /// Handle successful login/signup
   void onAuthSuccess(Player player) {
     SecureLogger.logDebug('AuthStateService: onAuthSuccess called with player: ${player.username}');
+    SecureLogger.logDebug('AuthStateService: Current state before update: $_currentState');
     _updateState(AuthState.authenticated, player);
+    SecureLogger.logDebug('AuthStateService: State updated to: $_currentState');
+    SecureLogger.logDebug('AuthStateService: Current player set to: ${_currentPlayer?.username}');
   }
 
   /// Handle logout

@@ -32,16 +32,47 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeForm();
+    _loadProfileData();
   }
 
-  void _initializeForm() {
-    final profile = widget.player.profile;
-    _bioController.text = profile?.bio ?? '';
-    _favoriteOtterFactController.text = profile?.favoriteOtterFact ?? '';
-    _titleController.text = profile?.title ?? '';
-    _profileBannerUrlController.text = profile?.profileBannerUrl ?? '';
-    _locationController.text = profile?.location ?? '';
+  Future<void> _loadProfileData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Fetch the latest player profile data from the backend
+      final player = await PlayerApiService.getPlayerProfile();
+      
+      if (mounted && player != null) {
+        final profile = player.profile;
+        _bioController.text = profile?.bio ?? '';
+        _favoriteOtterFactController.text = profile?.favoriteOtterFact ?? '';
+        _titleController.text = profile?.title ?? '';
+        _profileBannerUrlController.text = profile?.profileBannerUrl ?? '';
+        _locationController.text = profile?.location ?? '';
+        
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      SecureLogger.logError('Failed to load profile data', error: e);
+      if (mounted) {
+        // Fallback to using the passed player data if available
+        final profile = widget.player.profile;
+        _bioController.text = profile?.bio ?? '';
+        _favoriteOtterFactController.text = profile?.favoriteOtterFact ?? '';
+        _titleController.text = profile?.title ?? '';
+        _profileBannerUrlController.text = profile?.profileBannerUrl ?? '';
+        _locationController.text = profile?.location ?? '';
+        
+        setState(() {
+          _isLoading = false;
+          _validationErrors = {'general': ['Failed to load latest profile data. Showing cached data.']};
+        });
+      }
+    }
   }
 
   @override
@@ -154,7 +185,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
             )
-          else
+          else ...[
+            IconButton(
+              onPressed: _loadProfileData,
+              icon: const Icon(Icons.refresh, color: Color(0xFF4ECDC4)),
+              tooltip: 'Refresh Profile Data',
+            ),
             TextButton(
               onPressed: _saveProfile,
               child: const Text(
@@ -166,14 +202,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
               ),
             ),
+          ],
         ],
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      body: _isLoading 
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
+              ),
+            )
+          : Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // General error message
               if (_validationErrors?['general'] != null)

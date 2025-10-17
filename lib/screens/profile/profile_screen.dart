@@ -263,7 +263,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Expanded(
                         child: _buildStatCard(
                           'Total Score',
-                          '${_currentPlayer?.totalScore ?? 0}',
+                          '${_playerStats?['player_stats']?['total_score'] ?? _currentPlayer?.totalScore ?? 0}',
                           Icons.star,
                           const Color(0xFF4ECDC4),
                         ),
@@ -272,38 +272,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Expanded(
                         child: _buildStatCard(
                           'Games Played',
-                          '${_currentPlayer?.gamesPlayed ?? 0}',
+                          '${_playerStats?['player_stats']?['games_played'] ?? _currentPlayer?.gamesPlayed ?? 0}',
                           Icons.games,
                           const Color(0xFF44A08D),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-
-                  // Additional Stats
-                  if (_playerStats != null) ...[
-                    _buildStatCard(
-                      'Best Score',
-                      '${_playerStats?['best_score'] ?? 0}',
-                      Icons.trending_up,
-                      const Color(0xFFE74C3C),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildStatCard(
-                      'Average Score',
-                      '${_playerStats?['average_score']?.toStringAsFixed(1) ?? '0.0'}',
-                      Icons.analytics,
-                      const Color(0xFF9B59B6),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildStatCard(
-                      'Total Play Time',
-                      '${_playerStats?['total_play_time'] ?? '0'} min',
-                      Icons.timer,
-                      const Color(0xFFF39C12),
-                    ),
-                  ],
 
                   const SizedBox(height: 32),
 

@@ -31,8 +31,19 @@ class PlayerAuthService {
       }
       
       // Check if token is expired
-      if (JwtDecoder.isExpired(token)) {
-        SecureLogger.logAuth('Player token expired - clearing and marking as unauthenticated');
+      try {
+        final isExpired = JwtDecoder.isExpired(token);
+        SecureLogger.logDebug('JWT expiration check: isExpired=$isExpired, token length=${token.length}');
+        
+        if (isExpired) {
+          SecureLogger.logAuth('Player token expired - clearing and marking as unauthenticated');
+          await clearAuth();
+          return false;
+        }
+      } catch (e) {
+        SecureLogger.logError('Error checking JWT expiration', error: e);
+        SecureLogger.logDebug('Token that caused error: ${token.length > 50 ? token.substring(0, 50) + "..." : token}');
+        // If we can't decode the token, it's invalid
         await clearAuth();
         return false;
       }
@@ -50,20 +61,47 @@ class PlayerAuthService {
     try {
       if (_cachedToken != null) {
         // Check if cached token is still valid
-        if (!JwtDecoder.isExpired(_cachedToken!)) {
-          return _cachedToken;
-        } else {
+        try {
+          final isExpired = JwtDecoder.isExpired(_cachedToken!);
+          SecureLogger.logDebug('PlayerAuthService.getToken: Cached token expiration check: isExpired=$isExpired');
+          
+          if (!isExpired) {
+            SecureLogger.logDebug('PlayerAuthService.getToken: Returning cached token (length: ${_cachedToken!.length})');
+            return _cachedToken;
+          } else {
+            SecureLogger.logDebug('PlayerAuthService.getToken: Cached token is expired, clearing it');
+            _cachedToken = null;
+          }
+        } catch (e) {
+          SecureLogger.logError('Error checking cached token expiration', error: e);
           _cachedToken = null;
         }
       }
 
       final token = await _storage.read(key: _tokenKey);
-      if (token != null && !JwtDecoder.isExpired(token)) {
-        _cachedToken = token;
-        return token;
-      } else if (token != null) {
-        // Token is expired, remove it
-        await clearAuth();
+      if (token != null) {
+        try {
+          final isExpired = JwtDecoder.isExpired(token);
+          SecureLogger.logDebug('PlayerAuthService.getToken: Storage token expiration check: isExpired=$isExpired');
+          
+          if (!isExpired) {
+            _cachedToken = token;
+            SecureLogger.logDebug('PlayerAuthService.getToken: Retrieved token from storage (length: ${token.length})');
+            SecureLogger.logDebug('PlayerAuthService.getToken: Token preview: ${token.length > 20 ? token.substring(0, 20) + "..." : token}');
+            return token;
+          } else {
+            // Token is expired, remove it
+            SecureLogger.logDebug('PlayerAuthService.getToken: Token from storage is expired, clearing auth');
+            await clearAuth();
+          }
+        } catch (e) {
+          SecureLogger.logError('Error checking storage token expiration', error: e);
+          SecureLogger.logDebug('Storage token that caused error: ${token.length > 50 ? token.substring(0, 50) + "..." : token}');
+          await clearAuth();
+        }
+      } else {
+        SecureLogger.logDebug('PlayerAuthService.getToken: No token found in storage');
+        SecureLogger.logDebug('PlayerAuthService.getToken: Storage key used: $_tokenKey');
       }
       
       return null;
@@ -213,10 +251,18 @@ class PlayerAuthService {
       SecureLogger.logDebug('Response headers: ${response.headers.map}');
 
       if (response.statusCode == 200) {
+        SecureLogger.logDebug('=== SIGN IN RESPONSE PROCESSING ===');
+        SecureLogger.logDebug('Response status: ${response.statusCode}');
+        SecureLogger.logDebug('Response headers: ${response.headers.map}');
+        SecureLogger.logDebug('Response body: ${response.data}');
+        
         final token = _extractTokenFromResponse(response);
         final player = _extractPlayerFromResponse(response);
         
+        SecureLogger.logDebug('Sign in response processing: token=${token != null ? "present" : "null"}, player=${player != null ? "present" : "null"}');
+        
         if (token != null && player != null) {
+          SecureLogger.logDebug('Both token and player extracted successfully, storing auth data...');
           await _storeAuthData(token, player);
           SecureLogger.logAuth('Player sign in successful', data: {
             'playerId': player.id,
@@ -288,16 +334,27 @@ class PlayerAuthService {
   /// Store authentication data securely
   static Future<void> _storeAuthData(String token, Player player) async {
     try {
+      SecureLogger.logDebug('Storing auth data: token length=${token.length}, player id=${player.id}');
+      SecureLogger.logDebug('Storage key: $_tokenKey');
+      
       await _storage.write(key: _tokenKey, value: token);
+      SecureLogger.logDebug('Token stored successfully');
+      
+      // Verify token was stored
+      final storedToken = await _storage.read(key: _tokenKey);
+      SecureLogger.logDebug('Token verification: stored=${storedToken != null}, length=${storedToken?.length ?? 0}');
       
       // Store player data as query string for easy parsing
       final playerQueryString = Uri(queryParameters: player.toJson().map(
         (key, value) => MapEntry(key, value.toString()),
       )).query;
       await _storage.write(key: _playerKey, value: playerQueryString);
+      SecureLogger.logDebug('Player data stored successfully');
       
       _cachedToken = token;
       _cachedPlayer = player;
+      
+      SecureLogger.logDebug('Auth data caching completed');
     } catch (e) {
       SecureLogger.logError('Failed to store player auth data', error: e);
       rethrow;
@@ -309,25 +366,31 @@ class PlayerAuthService {
     // The token is in the Authorization response header
     // Rails devise-jwt sends it as: "Bearer <token>"
     
+    SecureLogger.logDebug('=== JWT Token Extraction Debug ===');
+    SecureLogger.logDebug('Response headers: ${response.headers.map}');
+    SecureLogger.logDebug('Response status: ${response.statusCode}');
+    
     // Try to get authorization header (Dio lowercases header names)
     final authHeader = response.headers.value('authorization');
     
     if (authHeader != null) {
-      SecureLogger.logDebug('Found authorization header: ${authHeader.substring(0, 20)}...');
+      SecureLogger.logDebug('Found authorization header: ${authHeader.length > 20 ? authHeader.substring(0, 20) + "..." : authHeader}');
+      SecureLogger.logDebug('Full authorization header: $authHeader');
       
+      // Extract just the JWT token part (without "Bearer " prefix) for storage
+      // But we'll add "Bearer " back when sending requests
+      String token;
       if (authHeader.startsWith('Bearer ')) {
-        final token = authHeader.substring(7).trim();
-        SecureLogger.logAuth('Successfully extracted JWT token from Authorization header');
-        return token;
+        token = authHeader.substring(7).trim();
       } else if (authHeader.startsWith('bearer ')) {
-        final token = authHeader.substring(7).trim();
-        SecureLogger.logAuth('Successfully extracted JWT token from authorization header (lowercase)');
-        return token;
+        token = authHeader.substring(7).trim();
       } else {
-        // Token without Bearer prefix
-        SecureLogger.logAuth('Found token without Bearer prefix');
-        return authHeader.trim();
+        token = authHeader.trim();
       }
+      
+      SecureLogger.logAuth('Successfully extracted JWT token from Authorization header (length: ${token.length})');
+      SecureLogger.logDebug('Token preview: ${token.length > 20 ? token.substring(0, 20) + "..." : token}');
+      return token; // Return just the JWT token part
     }
 
     // Fallback: Check response body
@@ -340,6 +403,7 @@ class PlayerAuthService {
     
     SecureLogger.logError('No JWT token found in response');
     SecureLogger.logDebug('Available headers: ${response.headers.map.keys.toList()}');
+    SecureLogger.logDebug('=== End JWT Token Extraction Debug ===');
     return null;
   }
 
