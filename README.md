@@ -4,11 +4,37 @@ A Flutter-based otter-themed game with comprehensive player authentication, secu
 
 ## 🎮 Game Features
 
-- **Flame Game Engine**: Smooth otter swimming gameplay
+- **Flame Game Engine**: Smooth otter swimming gameplay with sprite-based graphics
 - **Player Authentication**: JWT-based login/signup with secure token storage
 - **Guest Mode**: Play without authentication
 - **Player Profiles**: View stats, edit profile information, and track game history
 - **Secure API Integration**: Certificate pinning, retry logic, and comprehensive error handling
+- **Collectibles**: Collect hearts (restore health) and lilies (score points)
+- **Beautiful Game Over Screen**: Styled results screen with collection stats and score saving
+
+## 🕹️ Gameplay
+
+Otter Drift is a Flappy Bird-style game where you control an otter swimming down a river!
+
+### How to Play
+- **Tap anywhere** on the screen to move your otter to that position
+- **Avoid logs** - Hitting a log costs you a heart ❤️
+- **Collect hearts** - Restore health (max 3 hearts)
+- **Collect lilies** - Earn 10 points each 🌸
+- **Survive as long as possible** - Speed increases every 20 seconds!
+
+### Game Mechanics
+- **Hearts**: Start with 3 hearts, lose one per log collision
+- **Score**: Lilies award 10 points each
+- **Speed**: Starts at 120 pixels/sec, increases by 10% every 20 seconds (max 240)
+- **Spawning**: 60% logs (obstacles), 25% lilies (points), 15% hearts (health)
+
+### Sprite Assets
+The game uses custom sprites:
+- **Otter**: 64x64px - Player character
+- **Log**: 96x48px - Obstacle
+- **Lily**: 48x48px - Collectible (10 points)
+- **Heart**: 48x48px - Health restoration
 
 ## 🚀 Quick Start
 
@@ -118,6 +144,7 @@ final result = await BackendService.saveScore(
   maxSpeedReached: 15.5,
   obstaclesAvoided: 12,
   liliesCollected: 8,
+  heartsCollected: 5,
 );
 ```
 
@@ -129,6 +156,7 @@ final result = await BackendService.saveScore(
 - **ApiService**: Centralized HTTP client with automatic authentication
 - **AuthStateService**: Reactive state management for authentication
 - **SecurityConfig**: Centralized security configuration and validation
+- **BackendService**: Game session submission and leaderboard data
 
 ### Models
 - **Player**: Core player data with profile information
@@ -141,6 +169,8 @@ final result = await BackendService.saveScore(
 - **MainMenuScreen**: Post-login menu with game options
 - **ProfileScreen**: Player profile and statistics display
 - **EditProfileScreen**: Profile editing interface
+- **OtterGame**: Main game logic with Flame engine
+- **HUD**: Game heads-up display with score, health, and game over screen
 
 ## 🔧 Configuration
 
@@ -229,10 +259,12 @@ flutter build apk --dart-define=API_KEY=production_api_key_here
 ```
 lib/
 ├── game/                 # Flame game components
+│   ├── components/      # Game entities (Otter, Log, Lily, Heart)
+│   └── hud/            # Heads-up display and game over screen
 ├── models/              # Data models (Player, PlayerProfile)
 ├── screens/             # UI screens (auth, profile, menu)
 ├── services/            # Core services (auth, API, security)
-├── util/                # Utility functions
+├── util/                # Utility functions (RNG, etc.)
 └── widgets/             # Reusable UI components
 ```
 
