@@ -3,18 +3,22 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'otter.dart';
 
-class Heart extends RectangleComponent with HasCollisionDetection, HasGameReference {
+class Heart extends SpriteComponent with HasCollisionDetection, HasGameReference {
   late CircleHitbox _hitbox;
   double _scrollSpeed = 120.0;
   bool _hasBeenCollected = false;
   Function()? onCollect;
 
-  Heart() : super(size: Vector2.all(48)) {
-    paint = Paint()..color = Colors.red;
-  }
+  Heart() : super(size: Vector2.all(48));
 
   @override
   Future<void> onLoad() async {
+    try {
+      sprite = await game.loadSprite('sprites/heart.jpg');
+    } catch (e) {
+      print('Error loading heart sprite: $e');
+    }
+    
     // Add circular hitbox for collision detection
     final radius = (size.x < size.y ? size.x : size.y) * 0.35;
     _hitbox = CircleHitbox(radius: radius);

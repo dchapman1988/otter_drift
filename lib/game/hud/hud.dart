@@ -9,6 +9,8 @@ class Hud extends Component with HasGameReference {
   late RectangleComponent _gameOverOverlay;
   late TextComponent _gameOverText;
   late TextComponent _finalScoreText;
+  late TextComponent _statsText;
+  late TextComponent _saveStatusText;
   
   int hearts = 3;
   int score = 0;
@@ -74,22 +76,29 @@ class Hud extends Component with HasGameReference {
     );
     add(_debugText);
 
-    // Game Over overlay (initially hidden)
+    // Game Over overlay (initially hidden) - semi-transparent blue background
     _gameOverOverlay = RectangleComponent(
       size: game.size,
-      paint: Paint()..color = Colors.black,
+      paint: Paint()..color = const Color(0xCC1A3A50), // Semi-transparent dark blue
     );
     _gameOverOverlay.position = Vector2.zero();
     add(_gameOverOverlay);
 
     _gameOverText = TextComponent(
       text: 'Game Over!',
-      position: Vector2(game.size.x / 2 - 80, game.size.y / 2 - 80),
+      position: Vector2(game.size.x / 2 - 88, game.size.y / 2 - 80),
       textRenderer: TextPaint(
         style: const TextStyle(
-          fontSize: 32,
-          color: Colors.red,
+          fontSize: 36,
+          color: const Color(0xFFF59E0B), // Orange/amber
           fontWeight: FontWeight.bold,
+          shadows: [
+            Shadow(
+              offset: Offset(2, 2),
+              blurRadius: 4,
+              color: Colors.black87,
+            ),
+          ],
         ),
       ),
     );
@@ -97,20 +106,47 @@ class Hud extends Component with HasGameReference {
 
     _finalScoreText = TextComponent(
       text: 'Final Score: 0',
-      position: Vector2(game.size.x / 2 - 80, game.size.y / 2 - 20),
+      position: Vector2(game.size.x / 2 - 86, game.size.y / 2 - 20),
       textRenderer: TextPaint(
         style: const TextStyle(
-          fontSize: 24,
+          fontSize: 28,
           color: Colors.white,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
     add(_finalScoreText);
 
+    _statsText = TextComponent(
+      text: '',
+      position: Vector2(game.size.x / 2 - 100, game.size.y / 2 + 20),
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          fontSize: 18,
+          color: Colors.white70,
+        ),
+      ),
+    );
+    add(_statsText);
+
+    _saveStatusText = TextComponent(
+      text: '',
+      position: Vector2(game.size.x / 2 - 100, game.size.y / 2 + 180),
+      textRenderer: TextPaint(
+        style: const TextStyle(
+          fontSize: 16,
+          color: Colors.yellow,
+        ),
+      ),
+    );
+    add(_saveStatusText);
+
     // Hide game over overlay initially
     _gameOverOverlay.removeFromParent();
     _gameOverText.removeFromParent();
     _finalScoreText.removeFromParent();
+    _statsText.removeFromParent();
+    _saveStatusText.removeFromParent();
   }
 
   void updateHearts(int newHearts) {
@@ -134,17 +170,33 @@ class Hud extends Component with HasGameReference {
     _debugText.text = 'seed=$seed speed=${speed.toStringAsFixed(0)}';
   }
 
-  void showGameOver() {
+  void showGameOver({int liliesCollected = 0, int heartsCollected = 0}) {
     _gameOver = true;
     add(_gameOverText);
     add(_finalScoreText);
+    add(_statsText);
+    add(_saveStatusText);
     _finalScoreText.text = 'Final Score: $score';
+    _statsText.text = '💗 Hearts: $heartsCollected  🌸 Lilies: $liliesCollected';
+    _saveStatusText.text = ''; // Clear previous status
+  }
+
+  void setSaveStatus(String status, {bool isSuccess = true}) {
+    _saveStatusText.text = status;
+    _saveStatusText.textRenderer = TextPaint(
+      style: TextStyle(
+        fontSize: 16,
+        color: isSuccess ? Colors.green : Colors.red,
+      ),
+    );
   }
 
   void hideGameOver() {
     _gameOver = false;
     _gameOverText.removeFromParent();
     _finalScoreText.removeFromParent();
+    _statsText.removeFromParent();
+    _saveStatusText.removeFromParent();
   }
 
   bool handleTap(double x, double y) {
@@ -157,7 +209,7 @@ class Hud extends Component with HasGameReference {
     // Check if tap is on Play Again button
     final playAgainRect = Rect.fromLTWH(
       game.size.x / 2 - 80,
-      game.size.y / 2 + 20,
+      game.size.y / 2 + 50,
       160,
       40,
     );
@@ -165,7 +217,7 @@ class Hud extends Component with HasGameReference {
     // Check if tap is on Save Score button
     final saveScoreRect = Rect.fromLTWH(
       game.size.x / 2 - 80,
-      game.size.y / 2 + 70,
+      game.size.y / 2 + 100,
       160,
       40,
     );
@@ -173,7 +225,7 @@ class Hud extends Component with HasGameReference {
     // Check if tap is on Quit button
     final quitRect = Rect.fromLTWH(
       game.size.x / 2 - 80,
-      game.size.y / 2 + 120,
+      game.size.y / 2 + 150,
       160,
       40,
     );
@@ -203,48 +255,49 @@ class Hud extends Component with HasGameReference {
     super.render(canvas);
 
     if (_gameOver) {
-      // Draw the black background first
-      final backgroundPaint = Paint()..color = Colors.black;
+      // Draw semi-transparent dark blue background
+      final backgroundPaint = Paint()..color = const Color(0xCC1A3A50);
       canvas.drawRect(Rect.fromLTWH(0, 0, game.size.x, game.size.y), backgroundPaint);
-      // Draw buttons
-      final paint = Paint()
-        ..color = Colors.blue
+      
+      // Draw buttons with better styling
+      final buttonPaint = Paint()
+        ..color = const Color(0xFF0EA5E9) // Nice blue
         ..style = PaintingStyle.fill;
 
       // Play Again button
       final playAgainRect = Rect.fromLTWH(
         game.size.x / 2 - 80,
-        game.size.y / 2 + 20,
+        game.size.y / 2 + 50,
         160,
         40,
       );
       canvas.drawRRect(
-        RRect.fromRectAndRadius(playAgainRect, const Radius.circular(8)),
-        paint,
+        RRect.fromRectAndRadius(playAgainRect, const Radius.circular(12)),
+        buttonPaint,
       );
 
       // Save Score button
       final saveScoreRect = Rect.fromLTWH(
         game.size.x / 2 - 80,
-        game.size.y / 2 + 70,
+        game.size.y / 2 + 100,
         160,
         40,
       );
       canvas.drawRRect(
-        RRect.fromRectAndRadius(saveScoreRect, const Radius.circular(8)),
-        paint,
+        RRect.fromRectAndRadius(saveScoreRect, const Radius.circular(12)),
+        buttonPaint,
       );
 
       // Quit button
       final quitRect = Rect.fromLTWH(
         game.size.x / 2 - 80,
-        game.size.y / 2 + 120,
+        game.size.y / 2 + 150,
         160,
         40,
       );
       canvas.drawRRect(
-        RRect.fromRectAndRadius(quitRect, const Radius.circular(8)),
-        paint,
+        RRect.fromRectAndRadius(quitRect, const Radius.circular(12)),
+        buttonPaint,
       );
 
       // Button text

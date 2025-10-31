@@ -1,18 +1,29 @@
 import 'package:flame/components.dart';
+import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'otter.dart';
 
-class Lily extends RectangleComponent with HasGameReference {
+class Lily extends SpriteComponent with HasCollisionDetection, HasGameReference {
+  late CircleHitbox _hitbox;
   double _scrollSpeed = 120.0;
-  bool _hasBeenCounted = false;
+  bool _hasBeenCollected = false;
   Function(int)? onScore;
 
-  Lily() : super(size: Vector2.all(48)) {
-    paint = Paint()..color = Colors.pink;
-  }
+  Lily() : super(size: Vector2.all(48));
 
   @override
   Future<void> onLoad() async {
+    try {
+      sprite = await game.loadSprite('sprites/lily.jpg');
+    } catch (e) {
+      print('Error loading lily sprite: $e');
+    }
+    
+    // Add circular hitbox for collision detection
+    final radius = (size.x < size.y ? size.x : size.y) * 0.35;
+    _hitbox = CircleHitbox(radius: radius);
+    add(_hitbox);
+    
     anchor = Anchor.center;
   }
 
@@ -31,13 +42,13 @@ class Lily extends RectangleComponent with HasGameReference {
     // Move down at scroll speed
     position.y += _scrollSpeed * dt;
     
-    // Check if otter has passed this lily (no collision required)
-    if (!_hasBeenCounted) {
+    // Check for collision with otter
+    if (!_hasBeenCollected) {
       final otter = game.children.whereType<Otter>().firstOrNull;
-      if (otter != null && position.y > otter.position.y) {
-        _hasBeenCounted = true;
-        onScore?.call(1);
-        // TODO: Play "ding" sound effect
+      if (otter != null && toRect().overlaps(otter.toRect())) {
+        _hasBeenCollected = true;
+        onScore?.call(10); // Each lily gives 10 points
+        removeFromParent();
       }
     }
     

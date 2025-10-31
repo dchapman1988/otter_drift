@@ -3,17 +3,20 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'otter.dart';
 
-class Log extends RectangleComponent with HasCollisionDetection, HasGameReference {
+class Log extends SpriteComponent with HasCollisionDetection, HasGameReference {
   late CircleHitbox _hitbox;
   double _scrollSpeed = 120.0;
   bool _hasHitOtter = false;
 
-  Log() : super(size: Vector2(96, 48)) {
-    paint = Paint()..color = Colors.brown;
-  }
+  Log() : super(size: Vector2(96, 48));
 
   @override
   Future<void> onLoad() async {
+    try {
+      sprite = await game.loadSprite('sprites/log.jpg');
+    } catch (e) {
+      print('Error loading log sprite: $e');
+    }
     
     // Add circular hitbox with radius = min(width, height) * 0.35
     final radius = (size.x < size.y ? size.x : size.y) * 0.35;

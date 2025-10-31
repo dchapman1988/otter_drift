@@ -3,7 +3,7 @@ import 'package:flame/events.dart';
 import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 
-class Otter extends RectangleComponent with HasCollisionDetection, HasGameReference {
+class Otter extends SpriteComponent with HasCollisionDetection, HasGameReference {
   late CircleHitbox _hitbox;
   double _targetX = 0;
   final double _maxSpeed = 800.0; // px/sec
@@ -11,12 +11,15 @@ class Otter extends RectangleComponent with HasCollisionDetection, HasGameRefere
   bool _isFlashing = false;
   double _flashDuration = 0;
   
-  Otter() : super(size: Vector2.all(64)) {
-    paint = Paint()..color = Colors.blue;
-  }
+  Otter() : super(size: Vector2.all(64));
   
   @override
   Future<void> onLoad() async {
+    try {
+      sprite = await game.loadSprite('sprites/otter.jpg');
+    } catch (e) {
+      print('Error loading otter sprite: $e');
+    }
     
     // Position at 70% of screen height
     position = Vector2(game.size.x / 2, game.size.y * 0.7);

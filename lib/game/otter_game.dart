@@ -50,9 +50,6 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     sessionId = const Uuid().v4();
     gameStartedAt = DateTime.now();
     
-    // Preload all sprites - temporarily disabled due to invalid PNG files
-    // await _preloadSprites();
-    
     // Create background
     _riverBg = RiverBg();
     _riverBg.size = size;
@@ -80,20 +77,6 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     
     // Set up collision detection
     // The otter already has its hitbox in its onLoad method
-  }
-
-  Future<void> _preloadSprites() async {
-    try {
-      await Sprite.load('sprites/otter.png');
-      await Sprite.load('sprites/log.png');
-      await Sprite.load('sprites/lily.png');
-      await Sprite.load('sprites/heart.png');
-      await Sprite.load('sprites/river_tile.png');
-      print('All sprites loaded successfully');
-    } catch (e) {
-      print('Error loading sprites: $e');
-      // Continue anyway - components will handle missing sprites
-    }
   }
 
   @override
@@ -212,7 +195,10 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
 
   void addScore(int points) {
     score += points;
-    liliesCollected += points; // Each lily gives 1 point
+    // Count number of lilies collected, not points
+    if (points == 10) { // Lilies give 10 points each
+      liliesCollected += 1;
+    }
     _hud.updateScore(score);
   }
 
@@ -235,8 +221,11 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     children.whereType<Lily>().forEach((lily) => lily.removeFromParent());
     children.whereType<Heart>().forEach((heart) => heart.removeFromParent());
     
-    // Show game over screen
-    _hud.showGameOver();
+    // Show game over screen with stats
+    _hud.showGameOver(
+      liliesCollected: liliesCollected,
+      heartsCollected: heartsCollected,
+    );
   }
 
   void restart() {
@@ -303,10 +292,11 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     
     if (result != null) {
       // Show success message
-      // In a real implementation, you might use a snackbar or toast
+      _hud.setSaveStatus('✓ Score saved!', isSuccess: true);
       print('Score saved successfully!');
     } else {
       // Show error message
+      _hud.setSaveStatus('✗ Failed to save', isSuccess: false);
       print('Failed to save score');
     }
   }
