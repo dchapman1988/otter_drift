@@ -1,8 +1,0 @@
-This directory needs PNG sprite files:
-- otter.png (128x128) - Player character
-- log.png (128x128) - Brown obstacle  
-- lily.png (128x128) - Pink collectible
-- heart.png (128x128) - Red heart icon
-- river_tile.png (128x128) - Cyan background tile
-
-You can download proper sprites and replace these placeholders.
