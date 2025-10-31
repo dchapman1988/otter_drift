@@ -7,7 +7,7 @@ class Lily extends RectangleComponent with HasGameReference {
   bool _hasBeenCounted = false;
   Function(int)? onScore;
 
-  Lily() : super(size: Vector2.all(128)) {
+  Lily() : super(size: Vector2.all(48)) {
     paint = Paint()..color = Colors.pink;
   }
 

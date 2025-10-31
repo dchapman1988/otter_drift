@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'components/otter.dart';
 import 'components/log.dart';
 import 'components/lily.dart';
+import 'components/heart.dart';
 import 'components/river_bg.dart';
 import 'hud/hud.dart';
 import '../services/backend.dart';
@@ -34,6 +35,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   DateTime? gameStartedAt;
   int obstaclesAvoided = 0;
   int liliesCollected = 0;
+  int heartsCollected = 0;
 
   OtterGame({
     this.player,
@@ -144,6 +146,9 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     for (final lily in children.whereType<Lily>()) {
       lily.setScrollSpeed(currentSpeed);
     }
+    for (final heart in children.whereType<Heart>()) {
+      heart.setScrollSpeed(currentSpeed);
+    }
     
     // Check for collisions between otter and logs
     for (final log in children.whereType<Log>()) {
@@ -163,24 +168,34 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   }
 
   void spawnObstacle() {
-    // 70% logs, 30% lilies
-    final isLog = _rng.nextDouble() < 0.7;
+    // 60% logs, 25% lilies, 15% hearts
+    final roll = _rng.nextDouble();
     
     // Random X position within river banks
-    final margin = 64.0; // Half sprite width
+    // Use largest sprite dimension for margin (log is 96 wide)
+    final margin = 48.0; // Half of largest sprite width
     final x = _rng.rangeDouble(margin, size.x - margin);
     
-    if (isLog) {
+    if (roll < 0.6) {
+      // Spawn log
       final log = Log();
-      log.position = Vector2(x, -64.0); // Spawn off-screen top
+      log.position = Vector2(x, -48.0); // Spawn off-screen top
       log.setScrollSpeed(currentSpeed);
       add(log);
-    } else {
+    } else if (roll < 0.85) {
+      // Spawn lily
       final lily = Lily();
-      lily.position = Vector2(x, -64.0); // Spawn off-screen top
+      lily.position = Vector2(x, -48.0); // Spawn off-screen top
       lily.setScrollSpeed(currentSpeed);
       lily.setOnScoreCallback((points) => addScore(points));
       add(lily);
+    } else {
+      // Spawn heart
+      final heart = Heart();
+      heart.position = Vector2(x, -48.0); // Spawn off-screen top
+      heart.setScrollSpeed(currentSpeed);
+      heart.setOnCollectCallback(() => collectHeart());
+      add(heart);
     }
   }
 
@@ -201,6 +216,15 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     _hud.updateScore(score);
   }
 
+  void collectHeart() {
+    heartsCollected++;
+    // Restore health if not at max (max is 3)
+    if (hearts < 3) {
+      hearts++;
+      _hud.updateHearts(hearts);
+    }
+  }
+
   void gameOver() {
     // Stop background scrolling
     _riverBg.setScrollSpeed(0);
@@ -209,6 +233,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     _otter.removeFromParent();
     children.whereType<Log>().forEach((log) => log.removeFromParent());
     children.whereType<Lily>().forEach((lily) => lily.removeFromParent());
+    children.whereType<Heart>().forEach((heart) => heart.removeFromParent());
     
     // Show game over screen
     _hud.showGameOver();
@@ -223,6 +248,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     lastSpeedIncrease = 0.0;
     obstaclesAvoided = 0;
     liliesCollected = 0;
+    heartsCollected = 0;
     
     // New seed for new game
     seed = DateTime.now().millisecondsSinceEpoch;
@@ -233,6 +259,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     // Clear all obstacles
     children.whereType<Log>().toList().forEach((log) => log.removeFromParent());
     children.whereType<Lily>().toList().forEach((lily) => lily.removeFromParent());
+    children.whereType<Heart>().toList().forEach((heart) => heart.removeFromParent());
     
     // Restore otter if it was hidden
     if (!children.contains(_otter)) {
@@ -271,6 +298,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
       maxSpeedReached: currentSpeed,
       obstaclesAvoided: obstaclesAvoided,
       liliesCollected: liliesCollected,
+      heartsCollected: heartsCollected,
     );
     
     if (result != null) {

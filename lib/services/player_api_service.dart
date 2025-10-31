@@ -144,6 +144,7 @@ class PlayerApiService {
     required double maxSpeedReached,
     required int obstaclesAvoided,
     required int liliesCollected,
+    required int heartsCollected,
   }) async {
     try {
       SecureLogger.logDebug('Submitting game session with player authentication');
@@ -163,6 +164,7 @@ class PlayerApiService {
         'max_speed_reached': maxSpeedReached,
         'obstacles_avoided': obstaclesAvoided,
         'lilies_collected': liliesCollected,
+        'hearts_collected': heartsCollected,
       };
 
       // Add player_name for display purposes (optional, server may use player from JWT)

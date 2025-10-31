@@ -3,19 +3,19 @@ import 'package:flame/collisions.dart';
 import 'package:flutter/material.dart';
 import 'otter.dart';
 
-class Log extends RectangleComponent with HasCollisionDetection, HasGameReference {
+class Heart extends RectangleComponent with HasCollisionDetection, HasGameReference {
   late CircleHitbox _hitbox;
   double _scrollSpeed = 120.0;
-  bool _hasHitOtter = false;
+  bool _hasBeenCollected = false;
+  Function()? onCollect;
 
-  Log() : super(size: Vector2(96, 48)) {
-    paint = Paint()..color = Colors.brown;
+  Heart() : super(size: Vector2.all(48)) {
+    paint = Paint()..color = Colors.red;
   }
 
   @override
   Future<void> onLoad() async {
-    
-    // Add circular hitbox with radius = min(width, height) * 0.35
+    // Add circular hitbox for collision detection
     final radius = (size.x < size.y ? size.x : size.y) * 0.35;
     _hitbox = CircleHitbox(radius: radius);
     add(_hitbox);
@@ -27,6 +27,10 @@ class Log extends RectangleComponent with HasCollisionDetection, HasGameReferenc
     _scrollSpeed = speed;
   }
 
+  void setOnCollectCallback(Function() callback) {
+    onCollect = callback;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
@@ -34,22 +38,20 @@ class Log extends RectangleComponent with HasCollisionDetection, HasGameReferenc
     // Move down at scroll speed
     position.y += _scrollSpeed * dt;
     
+    // Check for collision with otter
+    if (!_hasBeenCollected) {
+      final otter = game.children.whereType<Otter>().firstOrNull;
+      if (otter != null && toRect().overlaps(otter.toRect())) {
+        _hasBeenCollected = true;
+        onCollect?.call();
+        removeFromParent();
+      }
+    }
+    
     // Remove if off screen
     if (position.y > game.size.y + size.y) {
       removeFromParent();
     }
   }
-
-  void onCollisionWithOtter() {
-    if (_hasHitOtter) return;
-    _hasHitOtter = true;
-    
-    // Find the otter and trigger damage
-    final otter = game.children.whereType<Otter>().firstOrNull;
-    if (otter != null) {
-      otter.takeDamage();
-    }
-  }
-
-  // Remove the onCollision override since we're handling collision in the main game loop
 }
+

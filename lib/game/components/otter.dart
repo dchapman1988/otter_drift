@@ -11,7 +11,7 @@ class Otter extends RectangleComponent with HasCollisionDetection, HasGameRefere
   bool _isFlashing = false;
   double _flashDuration = 0;
   
-  Otter() : super(size: Vector2.all(128)) {
+  Otter() : super(size: Vector2.all(64)) {
     paint = Paint()..color = Colors.blue;
   }
   

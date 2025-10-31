@@ -19,6 +19,7 @@ class BackendService {
     required double maxSpeedReached,
     required int obstaclesAvoided,
     required int liliesCollected,
+    required int heartsCollected,
   }) async {
     try {
       // Check if player is authenticated and use player API service
@@ -33,6 +34,7 @@ class BackendService {
           maxSpeedReached: maxSpeedReached,
           obstaclesAvoided: obstaclesAvoided,
           liliesCollected: liliesCollected,
+          heartsCollected: heartsCollected,
         );
       }
 
@@ -49,6 +51,7 @@ class BackendService {
           'max_speed_reached': maxSpeedReached,
           'obstacles_avoided': obstaclesAvoided,
           'lilies_collected': liliesCollected,
+          'hearts_collected': heartsCollected,
         }
       });
       
