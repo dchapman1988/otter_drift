@@ -131,10 +131,10 @@ class Hud extends Component with HasGameReference {
 
     _saveStatusText = TextComponent(
       text: '',
-      position: Vector2(game.size.x / 2 - 100, game.size.y / 2 + 180),
+      position: Vector2(game.size.x / 2 - 67, game.size.y / 2 + 200),
       textRenderer: TextPaint(
         style: const TextStyle(
-          fontSize: 16,
+          fontSize: 18,
           color: Colors.yellow,
         ),
       ),

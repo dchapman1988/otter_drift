@@ -126,3 +126,5 @@ Thumbs.db
 *.temp
 temp/
 tmp/
+
+security_check.sh
