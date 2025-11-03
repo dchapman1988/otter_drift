@@ -3,6 +3,7 @@ import '../models/player.dart';
 import '../models/player_profile.dart';
 import '../models/player_achievements.dart';
 import '../models/leaderboard_response.dart';
+import '../models/game_history_response.dart';
 import 'api_service.dart';
 import 'player_auth_service.dart';
 import 'secure_logger.dart';
@@ -291,6 +292,49 @@ class PlayerApiService {
       return null;
     } catch (e) {
       SecureLogger.logError('Failed to fetch player achievements', error: e);
+      return null;
+    }
+  }
+
+  /// Get player game history by username (public endpoint)
+  static Future<GameHistoryResponse?> getPlayerGameHistoryByUsername(
+    String username, {
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    try {
+      SecureLogger.logDebug(
+        'Fetching game history for username: $username (limit: $limit, offset: $offset)',
+      );
+
+      // Ensure limit doesn't exceed max
+      final effectiveLimit = limit > 100 ? 100 : limit;
+
+      final response = await ApiService.get(
+        '/api/v1/players/$username/game-history',
+        queryParameters: {'limit': effectiveLimit, 'offset': offset},
+      );
+
+      if (response.statusCode == 200) {
+        final gameHistory = GameHistoryResponse.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+        SecureLogger.logDebug(
+          'Player game history fetched successfully: ${gameHistory.returned} games returned',
+        );
+        return gameHistory;
+      }
+
+      return null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        SecureLogger.logDebug('Player not found: $username');
+        return null;
+      }
+      SecureLogger.logError('Failed to fetch player game history', error: e);
+      return null;
+    } catch (e) {
+      SecureLogger.logError('Failed to fetch player game history', error: e);
       return null;
     }
   }

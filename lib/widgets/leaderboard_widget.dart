@@ -228,16 +228,15 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
                 children: [
                   if (widget.showLimitSelector)
                     IconButton(
-                      icon: const Icon(
-                        Icons.tune,
-                        color: Color(0xFF4ECDC4),
-                      ),
+                      icon: const Icon(Icons.tune, color: Color(0xFF4ECDC4)),
                       onPressed: _showLimitDialog,
                       tooltip: 'Change limit',
                     ),
                   IconButton(
                     icon: const Icon(Icons.refresh, color: Color(0xFF4ECDC4)),
-                    onPressed: (_isLoading || _isRefreshing) ? null : () => _loadLeaderboard(),
+                    onPressed: (_isLoading || _isRefreshing)
+                        ? null
+                        : () => _loadLeaderboard(),
                     tooltip: 'Refresh',
                   ),
                 ],
@@ -263,18 +262,11 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    color: Colors.red[300],
-                    size: 48,
-                  ),
+                  Icon(Icons.error_outline, color: Colors.red[300], size: 48),
                   const SizedBox(height: 16),
                   Text(
                     _errorMessage!,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 16,
-                    ),
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
@@ -317,10 +309,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
                   const SizedBox(height: 8),
                   Text(
                     'Be the first to appear on the leaderboard!',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.white54, fontSize: 14),
                   ),
                 ],
               ),
@@ -336,7 +325,8 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
                 itemCount: _leaderboard!.leaderboard.length,
                 itemBuilder: (context, index) {
                   final entry = _leaderboard!.leaderboard[index];
-                  final isCurrentUser = entry.player?.username == _currentUsername;
+                  final isCurrentUser =
+                      entry.player?.username == _currentUsername;
                   return _buildLeaderboardEntry(entry, isCurrentUser);
                 },
               ),
@@ -397,47 +387,47 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
                     ),
                   )
                 : entry.player?.avatarUrl != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: Image.network(
-                          entry.player!.avatarUrl!,
-                          width: 48,
-                          height: 48,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Center(
-                              child: Icon(
-                                Icons.person,
-                                color: Colors.white70,
-                                size: 24,
-                              ),
-                            );
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Color(0xFF4ECDC4),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      )
-                    : Center(
-                        child: Text(
-                          entry.playerName.isNotEmpty
-                              ? entry.playerName.substring(0, 1).toUpperCase()
-                              : '?',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(24),
+                    child: Image.network(
+                      entry.player!.avatarUrl!,
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(
+                            Icons.person,
                             color: Colors.white70,
+                            size: 24,
                           ),
-                        ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xFF4ECDC4),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                : Center(
+                    child: Text(
+                      entry.playerName.isNotEmpty
+                          ? entry.playerName.substring(0, 1).toUpperCase()
+                          : '?',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white70,
                       ),
+                    ),
+                  ),
           ),
           const SizedBox(width: 12),
 
@@ -473,10 +463,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
                         ),
                         child: const Text(
                           'Guest',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.white54,
-                          ),
+                          style: TextStyle(fontSize: 10, color: Colors.white54),
                         ),
                       ),
                   ],
@@ -517,11 +504,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              const Icon(
-                Icons.star,
-                color: Color(0xFF4ECDC4),
-                size: 20,
-              ),
+              const Icon(Icons.star, color: Color(0xFF4ECDC4), size: 20),
               const SizedBox(height: 4),
               Text(
                 _formatScore(entry.score),
@@ -547,4 +530,3 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
     return score.toString();
   }
 }
-

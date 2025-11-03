@@ -8,6 +8,8 @@ A Flutter-based otter-themed game with comprehensive player authentication, secu
 - **Player Authentication**: JWT-based login/signup with secure token storage
 - **Guest Mode**: Play without authentication
 - **Player Profiles**: View stats, edit profile information, and track game history
+- **Achievements System**: Earn and display achievements with badges and points
+- **Global Leaderboard**: Compete with other players and see top scores with rank badges
 - **Secure API Integration**: Certificate pinning, retry logic, and comprehensive error handling
 - **Collectibles**: Collect hearts (restore health) and lilies (score points)
 - **Beautiful Game Over Screen**: Styled results screen with collection stats and score saving
@@ -69,6 +71,8 @@ The game uses custom sprites:
 - **Guest Mode**: Play without creating an account
 - **Profile Management**: Edit bio, favorite otter facts, title, location, and avatar
 - **Statistics Tracking**: Total score, games played, and game history
+- **Achievements Display**: View earned achievements with badges and points on profile
+- **Leaderboard Integration**: View global rankings and compete with other players
 
 ### API Endpoints
 The app expects these Rails API endpoints:
@@ -83,9 +87,13 @@ The app expects these Rails API endpoints:
 - `PUT /players/profile` - Update player profile
 - `GET /players/stats` - Get player statistics
 - `GET /players/game_history` - Get player's game history
+- `GET /api/v1/players/{username}/achievements` - Get player achievements (public endpoint)
 
 #### Game Sessions
 - `POST /api/v1/game_sessions` - Submit game session (with player context if authenticated)
+
+#### Leaderboard
+- `GET /api/v1/leaderboard` - Get global leaderboard (public endpoint, supports limit parameter)
 
 ## 🛡️ Security Features
 
@@ -161,14 +169,22 @@ final result = await BackendService.saveScore(
 ### Models
 - **Player**: Core player data with profile information
 - **PlayerProfile**: Extended profile data (bio, favorite otter fact, etc.)
+- **PlayerAchievement**: Individual achievement with badge, points, and collection date
+- **PlayerAchievements**: Wrapper for player achievements list
+- **LeaderboardEntry**: Leaderboard entry with rank, score, and player info
+- **LeaderboardResponse**: Wrapper for leaderboard data with totals
+- **PlayerInfo**: Player information for leaderboard entries
 - **GameSession**: Game session data for score submission
 
 ### UI Components
 - **AuthWrapper**: Main authentication routing
 - **LoginScreen/SignUpScreen**: Authentication forms
 - **MainMenuScreen**: Post-login menu with game options
-- **ProfileScreen**: Player profile and statistics display
+- **ProfileScreen**: Player profile, statistics, and achievements display
 - **EditProfileScreen**: Profile editing interface
+- **LeaderboardScreen**: Global leaderboard with rank badges and filtering
+- **AchievementsList**: Widget for displaying player achievements
+- **LeaderboardWidget**: Reusable leaderboard widget with pull-to-refresh
 - **OtterGame**: Main game logic with Flame engine
 - **HUD**: Game heads-up display with score, health, and game over screen
 
@@ -301,7 +317,10 @@ StreamBuilder<Player?>(
 - Player avatar upload
 - Friend system and multiplayer features
 - Advanced statistics and charts
-- Achievement system
+- Achievement progress tracking and unlock notifications
+- Leaderboard time filters (daily, weekly, monthly)
+- Achievement categories and filtering
+- Local leaderboard caching for offline viewing
 
 ## 📞 Support
 
