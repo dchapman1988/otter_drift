@@ -33,7 +33,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   double nextSpawnTime = 0.0;
   String sessionId = '';
   DateTime? gameStartedAt;
-  int obstaclesAvoided = 0;
+  int logsAvoided = 0;
   int liliesCollected = 0;
   int heartsCollected = 0;
 
@@ -140,9 +140,6 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
           takeDamage();
           _otter.takeDamage();
         }
-      } else if (log.position.y > _otter.position.y + _otter.size.y) {
-        // Log has passed the otter without collision
-        obstaclesAvoided++;
       }
     }
     
@@ -164,6 +161,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
       final log = Log();
       log.position = Vector2(x, -48.0); // Spawn off-screen top
       log.setScrollSpeed(currentSpeed);
+      log.setOnAvoidedCallback(() => onLogAvoided());
       add(log);
     } else if (roll < 0.85) {
       // Spawn lily
@@ -202,6 +200,11 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     _hud.updateScore(score);
   }
 
+  void onLogAvoided() {
+    logsAvoided++;
+    addScore(1); // Logs give 1 point each when avoided
+  }
+
   void collectHeart() {
     heartsCollected++;
     // Restore health if not at max (max is 3)
@@ -235,7 +238,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     currentSpeed = 120.0;
     gameTime = 0.0;
     lastSpeedIncrease = 0.0;
-    obstaclesAvoided = 0;
+    logsAvoided = 0;
     liliesCollected = 0;
     heartsCollected = 0;
     
@@ -285,7 +288,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
       finalScore: score,
       gameDuration: gameTime,
       maxSpeedReached: currentSpeed,
-      obstaclesAvoided: obstaclesAvoided,
+      obstaclesAvoided: logsAvoided,
       liliesCollected: liliesCollected,
       heartsCollected: heartsCollected,
     );

@@ -1,12 +1,13 @@
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
 import 'otter.dart';
 
 class Log extends SpriteComponent with HasCollisionDetection, HasGameReference {
   late CircleHitbox _hitbox;
   double _scrollSpeed = 120.0;
   bool _hasHitOtter = false;
+  bool _hasBeenCounted = false;
+  Function()? onAvoided;
 
   Log() : super(size: Vector2(96, 48));
 
@@ -17,12 +18,12 @@ class Log extends SpriteComponent with HasCollisionDetection, HasGameReference {
     } catch (e) {
       print('Error loading log sprite: $e');
     }
-    
+
     // Add circular hitbox with radius = min(width, height) * 0.35
     final radius = (size.x < size.y ? size.x : size.y) * 0.35;
     _hitbox = CircleHitbox(radius: radius);
     add(_hitbox);
-    
+
     anchor = Anchor.center;
   }
 
@@ -30,13 +31,26 @@ class Log extends SpriteComponent with HasCollisionDetection, HasGameReference {
     _scrollSpeed = speed;
   }
 
+  void setOnAvoidedCallback(Function() callback) {
+    onAvoided = callback;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
-    
+
     // Move down at scroll speed
     position.y += _scrollSpeed * dt;
-    
+
+    // Check if otter has passed this log without collision
+    if (!_hasBeenCounted && !_hasHitOtter) {
+      final otter = game.children.whereType<Otter>().firstOrNull;
+      if (otter != null && position.y > otter.position.y + otter.size.y) {
+        _hasBeenCounted = true;
+        onAvoided?.call();
+      }
+    }
+
     // Remove if off screen
     if (position.y > game.size.y + size.y) {
       removeFromParent();
@@ -46,7 +60,7 @@ class Log extends SpriteComponent with HasCollisionDetection, HasGameReference {
   void onCollisionWithOtter() {
     if (_hasHitOtter) return;
     _hasHitOtter = true;
-    
+
     // Find the otter and trigger damage
     final otter = game.children.whereType<Otter>().firstOrNull;
     if (otter != null) {

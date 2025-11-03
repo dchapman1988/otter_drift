@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../services/backend.dart';
 import '../../models/player.dart';
-import '../../services/auth_state_service.dart';
+import '../../widgets/achievements_list.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Player player;
   final VoidCallback onLogout;
 
-  const ProfileScreen({
-    Key? key,
-    required this.player,
-    required this.onLogout,
-  }) : super(key: key);
+  const ProfileScreen({Key? key, required this.player, required this.onLogout})
+    : super(key: key);
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -34,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final player = await BackendService.getPlayerProfile();
       final stats = await BackendService.getPlayerStats();
-      
+
       if (mounted) {
         setState(() {
           _currentPlayer = player ?? widget.player;
@@ -82,7 +79,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(width: 12),
             const Text(
               'Sign Out',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
@@ -104,7 +104,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                  const Icon(
+                    Icons.info_outline,
+                    color: Colors.orange,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -120,9 +124,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.white70,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.white70),
             child: const Text('Cancel'),
           ),
           ElevatedButton.icon(
@@ -208,7 +210,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           radius: 40,
                           backgroundColor: Colors.white.withOpacity(0.2),
                           child: Text(
-                            _currentPlayer?.displayName.substring(0, 1).toUpperCase() ?? 'P',
+                            _currentPlayer?.displayName
+                                    .substring(0, 1)
+                                    .toUpperCase() ??
+                                'P',
                             style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
@@ -283,7 +288,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 32),
 
                   // Profile Information Section
-                  if (_currentPlayer?.profile != null && !_currentPlayer!.profile!.isEmpty) ...[
+                  if (_currentPlayer?.profile != null &&
+                      !_currentPlayer!.profile!.isEmpty) ...[
                     const Text(
                       'Profile Information',
                       style: TextStyle(
@@ -315,7 +321,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
 
                     // Location
-                    if (_currentPlayer!.profile!.location?.isNotEmpty == true) ...[
+                    if (_currentPlayer!.profile!.location?.isNotEmpty ==
+                        true) ...[
                       _buildProfileSection(
                         'Location',
                         _currentPlayer!.profile!.location!,
@@ -325,7 +332,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ],
 
                     // Favorite Otter Fact
-                    if (_currentPlayer!.profile!.favoriteOtterFact?.isNotEmpty == true) ...[
+                    if (_currentPlayer!
+                            .profile!
+                            .favoriteOtterFact
+                            ?.isNotEmpty ==
+                        true) ...[
                       _buildProfileSection(
                         'Favorite Otter Fact',
                         _currentPlayer!.profile!.favoriteOtterFact!,
@@ -337,6 +348,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     const SizedBox(height: 16),
                   ],
+
+                  // Achievements Section
+                  const SizedBox(height: 32),
+                  const Divider(color: Colors.white24),
+                  const SizedBox(height: 16),
+                  AchievementsList(
+                    username:
+                        _currentPlayer?.username ?? widget.player.username,
+                  ),
+                  const SizedBox(height: 32),
 
                   // Action Buttons
                   SizedBox(
@@ -388,11 +409,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 32),
                   const Divider(color: Colors.white24),
                   const SizedBox(height: 16),
-                  
+
                   // Sign Out Button
                   SizedBox(
                     width: double.infinity,
@@ -418,7 +439,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -441,10 +467,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 4),
           Text(
             title,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.white70,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.white70),
             textAlign: TextAlign.center,
           ),
         ],
@@ -452,7 +475,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileSection(String title, String content, IconData icon, {Color? color}) {
+  Widget _buildProfileSection(
+    String title,
+    String content,
+    IconData icon, {
+    Color? color,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -465,11 +493,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: color ?? const Color(0xFF4ECDC4),
-                size: 20,
-              ),
+              Icon(icon, color: color ?? const Color(0xFF4ECDC4), size: 20),
               const SizedBox(width: 8),
               Text(
                 title,
@@ -495,4 +519,3 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
-

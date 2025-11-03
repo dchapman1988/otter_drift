@@ -1,6 +1,5 @@
 import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
-import 'package:flutter/material.dart';
 import 'otter.dart';
 
 class Heart extends SpriteComponent with HasCollisionDetection, HasGameReference {
