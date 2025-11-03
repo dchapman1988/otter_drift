@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/player.dart';
-import '../../services/auth_state_service.dart';
 import '../profile/profile_screen.dart';
+import '../leaderboard_screen.dart';
 
 class MainMenuScreen extends StatelessWidget {
   final Player? player;
@@ -199,11 +199,10 @@ class MainMenuScreen extends StatelessWidget {
               // Leaderboard Button
               OutlinedButton.icon(
                 onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Leaderboard coming soon!'),
-                      backgroundColor: Color(0xFF66A0C8),
-                      behavior: SnackBarBehavior.floating,
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LeaderboardScreen(),
                     ),
                   );
                 },

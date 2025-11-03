@@ -5,6 +5,7 @@ import 'player_auth_service.dart';
 import 'player_api_service.dart';
 import '../models/player.dart';
 import '../models/player_profile.dart';
+import '../models/leaderboard_response.dart';
 
 class BackendService {
 
@@ -195,7 +196,7 @@ class BackendService {
     );
   }
 
-  /// Get leaderboard with player's position
+  /// Get leaderboard with player's position (legacy endpoint)
   static Future<Map<String, dynamic>?> getLeaderboard({
     int limit = 10,
     String? timeFrame,
@@ -204,6 +205,13 @@ class BackendService {
       limit: limit,
       timeFrame: timeFrame,
     );
+  }
+
+  /// Get global leaderboard (new endpoint)
+  static Future<LeaderboardResponse?> getGlobalLeaderboard({
+    int limit = 100,
+  }) async {
+    return await PlayerApiService.getGlobalLeaderboard(limit: limit);
   }
 }
 

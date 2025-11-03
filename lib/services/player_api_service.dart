@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import '../models/player.dart';
 import '../models/player_profile.dart';
 import '../models/player_achievements.dart';
+import '../models/leaderboard_response.dart';
 import 'api_service.dart';
 import 'player_auth_service.dart';
 import 'secure_logger.dart';
@@ -223,6 +224,38 @@ class PlayerApiService {
       return null;
     } catch (e) {
       SecureLogger.logError('Failed to fetch leaderboard', error: e);
+      return null;
+    }
+  }
+
+  /// Get global leaderboard (public endpoint)
+  static Future<LeaderboardResponse?> getGlobalLeaderboard({
+    int limit = 100,
+  }) async {
+    try {
+      SecureLogger.logDebug('Fetching global leaderboard (limit: $limit)');
+
+      // Ensure limit doesn't exceed max
+      final effectiveLimit = limit > 500 ? 500 : limit;
+
+      final response = await ApiService.get(
+        '/api/v1/leaderboard',
+        queryParameters: {'limit': effectiveLimit},
+      );
+
+      if (response.statusCode == 200) {
+        final leaderboard = LeaderboardResponse.fromJson(
+          response.data as Map<String, dynamic>,
+        );
+        SecureLogger.logDebug(
+          'Global leaderboard fetched successfully: ${leaderboard.totalEntries} total entries',
+        );
+        return leaderboard;
+      }
+
+      return null;
+    } catch (e) {
+      SecureLogger.logError('Failed to fetch global leaderboard', error: e);
       return null;
     }
   }

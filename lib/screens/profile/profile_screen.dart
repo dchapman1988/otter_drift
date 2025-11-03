@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/backend.dart';
 import '../../models/player.dart';
 import '../../widgets/achievements_list.dart';
+import '../leaderboard_screen.dart';
 import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -389,11 +390,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: () {
-                        // TODO: Navigate to leaderboard
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Leaderboard coming soon!'),
-                            backgroundColor: Color(0xFF4ECDC4),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LeaderboardScreen(),
                           ),
                         );
                       },

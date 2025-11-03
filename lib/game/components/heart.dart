@@ -2,7 +2,8 @@ import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
 import 'otter.dart';
 
-class Heart extends SpriteComponent with HasCollisionDetection, HasGameReference {
+class Heart extends SpriteComponent
+    with HasCollisionDetection, HasGameReference {
   late CircleHitbox _hitbox;
   double _scrollSpeed = 120.0;
   bool _hasBeenCollected = false;
@@ -17,12 +18,12 @@ class Heart extends SpriteComponent with HasCollisionDetection, HasGameReference
     } catch (e) {
       print('Error loading heart sprite: $e');
     }
-    
+
     // Add circular hitbox for collision detection
     final radius = (size.x < size.y ? size.x : size.y) * 0.35;
     _hitbox = CircleHitbox(radius: radius);
     add(_hitbox);
-    
+
     anchor = Anchor.center;
   }
 
@@ -37,10 +38,10 @@ class Heart extends SpriteComponent with HasCollisionDetection, HasGameReference
   @override
   void update(double dt) {
     super.update(dt);
-    
+
     // Move down at scroll speed
     position.y += _scrollSpeed * dt;
-    
+
     // Check for collision with otter
     if (!_hasBeenCollected) {
       final otter = game.children.whereType<Otter>().firstOrNull;
@@ -50,11 +51,10 @@ class Heart extends SpriteComponent with HasCollisionDetection, HasGameReference
         removeFromParent();
       }
     }
-    
+
     // Remove if off screen
     if (position.y > game.size.y + size.y) {
       removeFromParent();
     }
   }
 }
-
