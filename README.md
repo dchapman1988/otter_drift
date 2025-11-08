@@ -2,6 +2,9 @@
 
 Otter Drift is a Flutter + Flame arcade game where you guide an otter down river rapids while collecting items and dodging hazards. This repository contains the Flutter client and requires a Rails API backend for player authentication and leaderboard data.
 
+Frontend repo: this project  
+Backend repo: [otter_drift_api](https://github.com/dchapman1988/otter_drift_api/)
+
 ## Prerequisites
 
 - Flutter 3.22+ (check with `flutter --version`)
@@ -49,6 +52,13 @@ flutter build apk --dart-define=API_KEY=prod_key_here
 - **Game Over** – Shows run stats and lets you submit the score to the backend (if signed in) or replay.
 
 Guest play is supported; signing in enables profile sync, achievements, and placement on the global leaderboard managed by the Rails API.
+
+## Important Details
+
+- Authentication uses JWT tokens stored via `flutter_secure_storage`; all API calls run through `ApiService` which injects auth headers and enforces certificate pinning rules.
+- All secret configuration (API keys, base URLs) must be provided via `--dart-define` flags at build/run time to avoid leaking credentials.
+- The project ships with a structured logging utility (`SecureLogger`) that automatically masks sensitive fields before writing to console.
+- Asset pipeline lives under `assets/`; be sure to run `flutter pub get` after modifying `pubspec.yaml` to include new sprites or audio.
 
 ## Backend Notes
 
