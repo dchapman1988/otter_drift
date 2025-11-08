@@ -73,3 +73,19 @@ Guest play is supported; signing in enables profile sync, achievements, and plac
 - **Sprite/audio not loading** – Check asset paths in `pubspec.yaml` and confirm they are bundled.
 
 Happy drifting! 🦦
+
+## Media
+<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 17 59 PM" src="https://github.com/user-attachments/assets/5adb68fd-1fa7-4ccd-a5d2-52f14cbfc9cb" />
+<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 17 13 PM" src="https://github.com/user-attachments/assets/a713e381-77f2-4462-8b0a-643684f449b3" />
+<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 17 45 PM" src="https://github.com/user-attachments/assets/921dab53-74fd-4bd4-9287-9b1296aef85f" />
+<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 18 16 PM" src="https://github.com/user-attachments/assets/c4e7c0d9-37d7-4e63-9063-a4fb821c0aef" />
+<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 18 21 PM" src="https://github.com/user-attachments/assets/6100a19c-c2b1-4e5a-9260-4f40f8f55e3a" />
+<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 18 39 PM" src="https://github.com/user-attachments/assets/20fe3029-e2b2-4e29-93a1-6977cf152271" />
+<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 18 48 PM" src="https://github.com/user-attachments/assets/56b1de6b-eeb0-49aa-a5ce-81e0cecbe7b6" />
+
+
+
+
+
+
+
