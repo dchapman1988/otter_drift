@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import 'game/otter_game.dart';
 import 'widgets/auth_wrapper.dart';
+import 'services/game_session_sync_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+  await GameSessionSyncService.instance.initialize();
+
   runApp(const OtterDriftApp());
 }
 
@@ -31,9 +33,7 @@ class GameScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GameWidget<OtterGame>.controlled(
-        gameFactory: OtterGame.new,
-      ),
+      body: GameWidget<OtterGame>.controlled(gameFactory: OtterGame.new),
     );
   }
 }

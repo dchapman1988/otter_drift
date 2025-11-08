@@ -11,15 +11,14 @@ class Hud extends Component with HasGameReference {
   late TextComponent _finalScoreText;
   late TextComponent _statsText;
   late TextComponent _saveStatusText;
-  
+
   int hearts = 3;
   int score = 0;
   double speed = 120.0;
   int seed = 0;
   bool _gameOver = false;
-  
+
   Function()? onPlayAgain;
-  Function()? onSaveScore;
   Function()? onQuit;
 
   @override
@@ -29,10 +28,7 @@ class Hud extends Component with HasGameReference {
       text: '❤️ ❤️ ❤️',
       position: Vector2(20, 20),
       textRenderer: TextPaint(
-        style: const TextStyle(
-          fontSize: 24,
-          color: Colors.red,
-        ),
+        style: const TextStyle(fontSize: 24, color: Colors.red),
       ),
     );
     add(_heartsText);
@@ -42,10 +38,7 @@ class Hud extends Component with HasGameReference {
       text: 'Score: 0',
       position: Vector2(game.size.x - 120, 20),
       textRenderer: TextPaint(
-        style: const TextStyle(
-          fontSize: 20,
-          color: Colors.white,
-        ),
+        style: const TextStyle(fontSize: 20, color: Colors.white),
       ),
     );
     add(_scoreText);
@@ -55,10 +48,7 @@ class Hud extends Component with HasGameReference {
       text: 'Speed: x1.0',
       position: Vector2(game.size.x / 2 - 40, 20),
       textRenderer: TextPaint(
-        style: const TextStyle(
-          fontSize: 16,
-          color: Colors.yellow,
-        ),
+        style: const TextStyle(fontSize: 16, color: Colors.yellow),
       ),
     );
     add(_speedText);
@@ -68,10 +58,7 @@ class Hud extends Component with HasGameReference {
       text: 'seed=0 speed=120',
       position: Vector2(10, game.size.y - 30),
       textRenderer: TextPaint(
-        style: const TextStyle(
-          fontSize: 12,
-          color: Colors.white70,
-        ),
+        style: const TextStyle(fontSize: 12, color: Colors.white70),
       ),
     );
     add(_debugText);
@@ -79,7 +66,8 @@ class Hud extends Component with HasGameReference {
     // Game Over overlay (initially hidden) - semi-transparent blue background
     _gameOverOverlay = RectangleComponent(
       size: game.size,
-      paint: Paint()..color = const Color(0xCC1A3A50), // Semi-transparent dark blue
+      paint: Paint()
+        ..color = const Color(0xCC1A3A50), // Semi-transparent dark blue
     );
     _gameOverOverlay.position = Vector2.zero();
     add(_gameOverOverlay);
@@ -93,11 +81,7 @@ class Hud extends Component with HasGameReference {
           color: const Color(0xFFF59E0B), // Orange/amber
           fontWeight: FontWeight.bold,
           shadows: [
-            Shadow(
-              offset: Offset(2, 2),
-              blurRadius: 4,
-              color: Colors.black87,
-            ),
+            Shadow(offset: Offset(2, 2), blurRadius: 4, color: Colors.black87),
           ],
         ),
       ),
@@ -121,22 +105,17 @@ class Hud extends Component with HasGameReference {
       text: '',
       position: Vector2(game.size.x / 2 - 100, game.size.y / 2 + 20),
       textRenderer: TextPaint(
-        style: const TextStyle(
-          fontSize: 18,
-          color: Colors.white70,
-        ),
+        style: const TextStyle(fontSize: 18, color: Colors.white70),
       ),
     );
     add(_statsText);
 
     _saveStatusText = TextComponent(
       text: '',
-      position: Vector2(game.size.x / 2 - 67, game.size.y / 2 + 200),
+      position: Vector2(game.size.x / 2, game.size.y / 2 + 200),
+      anchor: Anchor.center,
       textRenderer: TextPaint(
-        style: const TextStyle(
-          fontSize: 18,
-          color: Colors.yellow,
-        ),
+        style: const TextStyle(fontSize: 18, color: Colors.yellow),
       ),
     );
     add(_saveStatusText);
@@ -177,7 +156,8 @@ class Hud extends Component with HasGameReference {
     add(_statsText);
     add(_saveStatusText);
     _finalScoreText.text = 'Final Score: $score';
-    _statsText.text = '💗 Hearts: $heartsCollected  🌸 Lilies: $liliesCollected';
+    _statsText.text =
+        '💗 Hearts: $heartsCollected  🌸 Lilies: $liliesCollected';
     _saveStatusText.text = ''; // Clear previous status
   }
 
@@ -214,32 +194,20 @@ class Hud extends Component with HasGameReference {
       40,
     );
 
-    // Check if tap is on Save Score button
-    final saveScoreRect = Rect.fromLTWH(
-      game.size.x / 2 - 80,
-      game.size.y / 2 + 100,
-      160,
-      40,
-    );
-
     // Check if tap is on Quit button
     final quitRect = Rect.fromLTWH(
       game.size.x / 2 - 80,
-      game.size.y / 2 + 150,
+      game.size.y / 2 + 110,
       160,
       40,
     );
 
-    print('Button rects - PlayAgain: $playAgainRect, SaveScore: $saveScoreRect, Quit: $quitRect');
+    print('Button rects - PlayAgain: $playAgainRect, Quit: $quitRect');
     print('Tap point: ($tapX, $tapY)');
-    
+
     if (playAgainRect.contains(Offset(tapX, tapY))) {
       print('Play Again button tapped!');
       onPlayAgain?.call();
-      return true;
-    } else if (saveScoreRect.contains(Offset(tapX, tapY))) {
-      print('Save Score button tapped!');
-      onSaveScore?.call();
       return true;
     } else if (quitRect.contains(Offset(tapX, tapY))) {
       print('Quit button tapped!');
@@ -257,11 +225,15 @@ class Hud extends Component with HasGameReference {
     if (_gameOver) {
       // Draw semi-transparent dark blue background
       final backgroundPaint = Paint()..color = const Color(0xCC1A3A50);
-      canvas.drawRect(Rect.fromLTWH(0, 0, game.size.x, game.size.y), backgroundPaint);
-      
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, game.size.x, game.size.y),
+        backgroundPaint,
+      );
+
       // Draw buttons with better styling
       final buttonPaint = Paint()
-        ..color = const Color(0xFF0EA5E9) // Nice blue
+        ..color =
+            const Color(0xFF0EA5E9) // Nice blue
         ..style = PaintingStyle.fill;
 
       // Play Again button
@@ -276,22 +248,10 @@ class Hud extends Component with HasGameReference {
         buttonPaint,
       );
 
-      // Save Score button
-      final saveScoreRect = Rect.fromLTWH(
-        game.size.x / 2 - 80,
-        game.size.y / 2 + 100,
-        160,
-        40,
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(saveScoreRect, const Radius.circular(12)),
-        buttonPaint,
-      );
-
       // Quit button
       final quitRect = Rect.fromLTWH(
         game.size.x / 2 - 80,
-        game.size.y / 2 + 150,
+        game.size.y / 2 + 110,
         160,
         40,
       );
@@ -301,9 +261,7 @@ class Hud extends Component with HasGameReference {
       );
 
       // Button text
-      final textPainter = TextPainter(
-        textDirection: TextDirection.ltr,
-      );
+      final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
       textPainter.text = const TextSpan(
         text: 'Play Again',
@@ -319,23 +277,6 @@ class Hud extends Component with HasGameReference {
         Offset(
           playAgainRect.center.dx - textPainter.width / 2,
           playAgainRect.center.dy - textPainter.height / 2,
-        ),
-      );
-
-      textPainter.text = const TextSpan(
-        text: 'Save Score',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      );
-      textPainter.layout();
-      textPainter.paint(
-        canvas,
-        Offset(
-          saveScoreRect.center.dx - textPainter.width / 2,
-          saveScoreRect.center.dy - textPainter.height / 2,
         ),
       );
 

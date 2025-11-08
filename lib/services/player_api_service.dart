@@ -108,8 +108,7 @@ class PlayerApiService {
         'player[avatar]': MultipartFile.fromBytes(
           fileBytes,
           filename: filename,
-          contentType:
-              mimeType != null ? MediaType.parse(mimeType) : null,
+          contentType: mimeType != null ? MediaType.parse(mimeType) : null,
         ),
       });
 
@@ -117,9 +116,7 @@ class PlayerApiService {
         '/api/v1/players/profile',
         data: formData,
         options: Options(
-          headers: {
-            if (mimeType != null) 'X-Upload-Content-Type': mimeType,
-          },
+          headers: {if (mimeType != null) 'X-Upload-Content-Type': mimeType},
         ),
       );
 
@@ -135,7 +132,9 @@ class PlayerApiService {
         return player;
       }
 
-      SecureLogger.logError('Avatar upload failed with status ${response.statusCode}');
+      SecureLogger.logError(
+        'Avatar upload failed with status ${response.statusCode}',
+      );
       return null;
     } catch (e) {
       SecureLogger.logError('Failed to upload player avatar', error: e);
@@ -204,6 +203,7 @@ class PlayerApiService {
     required int obstaclesAvoided,
     required int liliesCollected,
     required int heartsCollected,
+    String? playerName,
   }) async {
     try {
       SecureLogger.logDebug(
@@ -229,8 +229,10 @@ class PlayerApiService {
       };
 
       // Add player_name for display purposes (optional, server may use player from JWT)
-      if (currentPlayer != null) {
-        gameSessionData['player_name'] = currentPlayer.displayName;
+      final resolvedPlayerName =
+          playerName ?? currentPlayer?.displayName ?? currentPlayer?.username;
+      if (resolvedPlayerName != null && resolvedPlayerName.isNotEmpty) {
+        gameSessionData['player_name'] = resolvedPlayerName;
       }
 
       final gameData = {'game_session': gameSessionData};

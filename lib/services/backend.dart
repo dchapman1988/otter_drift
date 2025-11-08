@@ -5,12 +5,12 @@ import 'api_service.dart';
 import 'auth_service.dart';
 import 'player_auth_service.dart';
 import 'player_api_service.dart';
+import 'secure_logger.dart';
 import '../models/player.dart';
 import '../models/player_profile.dart';
 import '../models/leaderboard_response.dart';
 
 class BackendService {
-
   static Future<Map<String, dynamic>?> saveScore({
     required String sessionId,
     required String playerName,
@@ -27,7 +27,7 @@ class BackendService {
     try {
       // Check if player is authenticated and use player API service
       if (await PlayerAuthService.isAuthenticated()) {
-        return await PlayerApiService.submitGameSession(
+        final playerResult = await PlayerApiService.submitGameSession(
           sessionId: sessionId,
           seed: seed,
           startedAt: startedAt,
@@ -38,29 +38,41 @@ class BackendService {
           obstaclesAvoided: obstaclesAvoided,
           liliesCollected: liliesCollected,
           heartsCollected: heartsCollected,
+          playerName: playerName,
+        );
+
+        if (playerResult != null) {
+          return playerResult;
+        }
+
+        SecureLogger.logDebug(
+          'Player game session submission returned null, falling back to guest endpoint',
         );
       }
 
       // Fallback to original system for guest mode
-      final response = await ApiService.post('/api/v1/game_sessions', data: {
-        'game_session': {
-          'session_id': sessionId,
-          'player_name': playerName,
-          'seed': seed,
-          'started_at': startedAt.toIso8601String(),
-          'ended_at': endedAt.toIso8601String(),
-          'final_score': finalScore,
-          'game_duration': gameDuration,
-          'max_speed_reached': maxSpeedReached,
-          'obstacles_avoided': obstaclesAvoided,
-          'lilies_collected': liliesCollected,
-          'hearts_collected': heartsCollected,
-        }
-      });
-      
+      final response = await ApiService.post(
+        '/api/v1/game_sessions',
+        data: {
+          'game_session': {
+            'session_id': sessionId,
+            'player_name': playerName,
+            'seed': seed,
+            'started_at': startedAt.toIso8601String(),
+            'ended_at': endedAt.toIso8601String(),
+            'final_score': finalScore,
+            'game_duration': gameDuration,
+            'max_speed_reached': maxSpeedReached,
+            'obstacles_avoided': obstaclesAvoided,
+            'lilies_collected': liliesCollected,
+            'hearts_collected': heartsCollected,
+          },
+        },
+      );
+
       print('POST /api/v1/game_sessions - Status: ${response.statusCode}');
       print('Response: ${response.data}');
-      
+
       return response.data;
     } catch (e) {
       print('POST /api/v1/game_sessions - Error: $e');
@@ -74,13 +86,14 @@ class BackendService {
 
   static Future<List<Map<String, dynamic>>?> topScores({int limit = 10}) async {
     try {
-      final response = await ApiService.get('/api/v1/scores/top', queryParameters: {
-        'limit': limit,
-      });
-      
+      final response = await ApiService.get(
+        '/api/v1/scores/top',
+        queryParameters: {'limit': limit},
+      );
+
       print('GET /api/v1/scores/top - Status: ${response.statusCode}');
       print('Response: ${response.data}');
-      
+
       if (response.data is Map && response.data.containsKey('scores')) {
         return List<Map<String, dynamic>>.from(response.data['scores']);
       }
@@ -151,10 +164,7 @@ class BackendService {
     required String email,
     required String password,
   }) async {
-    return await PlayerAuthService.signIn(
-      email: email,
-      password: password,
-    );
+    return await PlayerAuthService.signIn(email: email, password: password);
   }
 
   /// Sign out the current player
@@ -229,5 +239,3 @@ class BackendService {
     return await PlayerApiService.getGlobalLeaderboard(limit: limit);
   }
 }
-
-

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flame/game.dart';
 import 'package:flame/events.dart';
 import 'package:flame/components.dart';
@@ -10,9 +12,10 @@ import 'components/lily.dart';
 import 'components/heart.dart';
 import 'components/river_bg.dart';
 import 'hud/hud.dart';
-import '../services/backend.dart';
 import '../util/rng.dart';
 import '../models/player.dart';
+import '../models/game_session.dart';
+import '../services/game_session_sync_service.dart';
 
 class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   late RiverBg _riverBg;
@@ -36,6 +39,9 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   int logsAvoided = 0;
   int liliesCollected = 0;
   int heartsCollected = 0;
+  bool _hasSubmittedScore = false;
+  bool _isSavingScore = false;
+  StreamSubscription<GameSessionSyncEvent>? _syncSubscription;
 
   OtterGame({this.player, this.isGuestMode = false});
 
@@ -59,9 +65,34 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     // Create HUD
     _hud = Hud();
     _hud.onPlayAgain = restart;
-    _hud.onSaveScore = saveScore;
     _hud.onQuit = quitGame;
     add(_hud);
+
+    _syncSubscription = GameSessionSyncService.instance.syncEvents.listen((
+      event,
+    ) {
+      if (event.session.sessionId != sessionId) {
+        return;
+      }
+
+      switch (event.status) {
+        case GameSessionSubmissionStatus.submitted:
+          _hud.setSaveStatus('✓ Score synced!', isSuccess: true);
+          _hasSubmittedScore = true;
+          break;
+        case GameSessionSubmissionStatus.queuedOffline:
+          _hud.setSaveStatus(
+            'Offline. Will sync when connected.',
+            isSuccess: true,
+          );
+          _hasSubmittedScore = true;
+          break;
+        case GameSessionSubmissionStatus.failed:
+          _hud.setSaveStatus('✗ Failed to sync', isSuccess: false);
+          _hasSubmittedScore = false;
+          break;
+      }
+    });
 
     // Update HUD initial values
     _hud.updateHearts(hearts);
@@ -232,6 +263,8 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
       liliesCollected: liliesCollected,
       heartsCollected: heartsCollected,
     );
+
+    saveScore();
   }
 
   void restart() {
@@ -244,6 +277,8 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     logsAvoided = 0;
     liliesCollected = 0;
     heartsCollected = 0;
+    _hasSubmittedScore = false;
+    _isSavingScore = false;
 
     // New seed for new game
     seed = DateTime.now().millisecondsSinceEpoch;
@@ -283,12 +318,16 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   }
 
   void saveScore() async {
-    // Show loading or disable button temporarily
-    final playerName = player?.displayName ?? 'Guest Player';
+    if (_hasSubmittedScore || _isSavingScore) {
+      return;
+    }
 
-    final result = await BackendService.saveScore(
+    _isSavingScore = true;
+    _hud.setSaveStatus('Saving score...');
+
+    final session = GameSession(
       sessionId: sessionId,
-      playerName: playerName,
+      playerName: player?.displayName ?? 'Guest Player',
       seed: seed,
       startedAt: gameStartedAt ?? DateTime.now(),
       endedAt: DateTime.now(),
@@ -300,20 +339,38 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
       heartsCollected: heartsCollected,
     );
 
-    if (result != null) {
-      // Show success message
-      _hud.setSaveStatus('✓ Score saved!', isSuccess: true);
-      print('Score saved successfully!');
-    } else {
-      // Show error message
-      _hud.setSaveStatus('✗ Failed to save', isSuccess: false);
-      print('Failed to save score');
+    final result = await GameSessionSyncService.instance.submit(session);
+
+    switch (result.status) {
+      case GameSessionSubmissionStatus.submitted:
+        _hud.setSaveStatus('✓ Score saved!', isSuccess: true);
+        _hasSubmittedScore = true;
+        break;
+      case GameSessionSubmissionStatus.queuedOffline:
+        _hud.setSaveStatus(
+          'Offline. Will sync when connected.',
+          isSuccess: true,
+        );
+        _hasSubmittedScore = true;
+        break;
+      case GameSessionSubmissionStatus.failed:
+        _hud.setSaveStatus('✗ Failed to save', isSuccess: false);
+        _hasSubmittedScore = false;
+        break;
     }
+
+    _isSavingScore = false;
   }
 
   void quitGame() {
     // Exit the Flutter app
     SystemNavigator.pop();
+  }
+
+  @override
+  void onRemove() {
+    _syncSubscription?.cancel();
+    super.onRemove();
   }
 
   // Input handling will be added later
