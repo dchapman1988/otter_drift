@@ -1,4 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
+
 import '../../models/player.dart';
 import '../../models/player_profile.dart';
 import '../../services/player_api_service.dart';
@@ -25,14 +30,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _titleController = TextEditingController();
   final _profileBannerUrlController = TextEditingController();
   final _locationController = TextEditingController();
+  final ImagePicker _imagePicker = ImagePicker();
 
+  Player? _player;
   bool _isLoading = false;
+  bool _isUploadingAvatar = false;
   Map<String, dynamic>? _validationErrors;
+  Uint8List? _selectedAvatarBytes;
+  String? _selectedAvatarName;
+  String? _selectedAvatarPath;
+  String? _avatarError;
 
   @override
   void initState() {
     super.initState();
+    _player = widget.player;
+    _populateFormFromPlayer(_player);
     _loadProfileData();
+  }
+
+  void _populateFormFromPlayer(Player? player) {
+    final profile = player?.profile;
+    _bioController.text = profile?.bio ?? '';
+    _favoriteOtterFactController.text = profile?.favoriteOtterFact ?? '';
+    _titleController.text = profile?.title ?? '';
+    _profileBannerUrlController.text = profile?.profileBannerUrl ?? '';
+    _locationController.text = profile?.location ?? '';
   }
 
   Future<void> _loadProfileData() async {
@@ -45,14 +68,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       final player = await PlayerApiService.getPlayerProfile();
       
       if (mounted && player != null) {
-        final profile = player.profile;
-        _bioController.text = profile?.bio ?? '';
-        _favoriteOtterFactController.text = profile?.favoriteOtterFact ?? '';
-        _titleController.text = profile?.title ?? '';
-        _profileBannerUrlController.text = profile?.profileBannerUrl ?? '';
-        _locationController.text = profile?.location ?? '';
-        
+        _populateFormFromPlayer(player);
+
         setState(() {
+          _player = player;
           _isLoading = false;
         });
       }
@@ -60,14 +79,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       SecureLogger.logError('Failed to load profile data', error: e);
       if (mounted) {
         // Fallback to using the passed player data if available
-        final profile = widget.player.profile;
-        _bioController.text = profile?.bio ?? '';
-        _favoriteOtterFactController.text = profile?.favoriteOtterFact ?? '';
-        _titleController.text = profile?.title ?? '';
-        _profileBannerUrlController.text = profile?.profileBannerUrl ?? '';
-        _locationController.text = profile?.location ?? '';
+        _populateFormFromPlayer(widget.player);
         
         setState(() {
+          _player = widget.player;
           _isLoading = false;
           _validationErrors = {'general': ['Failed to load latest profile data. Showing cached data.']};
         });
@@ -152,6 +167,101 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _pickAvatar() async {
+    try {
+      final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) {
+        return;
+      }
+
+      final bytes = await pickedFile.readAsBytes();
+      if (bytes.length > 5 * 1024 * 1024) {
+        setState(() {
+          _avatarError = 'Please choose an image smaller than 5MB.';
+          _selectedAvatarBytes = null;
+          _selectedAvatarName = null;
+          _selectedAvatarPath = null;
+        });
+        return;
+      }
+
+      setState(() {
+        _selectedAvatarBytes = bytes;
+        _selectedAvatarName = pickedFile.name;
+        _selectedAvatarPath = pickedFile.path;
+        _avatarError = null;
+      });
+    } catch (e) {
+      SecureLogger.logError('Failed to pick avatar image', error: e);
+      setState(() {
+        _avatarError = 'Failed to open image picker. Please try again.';
+      });
+    }
+  }
+
+  Future<void> _uploadAvatar() async {
+    if (_selectedAvatarBytes == null || _selectedAvatarName == null) {
+      setState(() {
+        _avatarError = 'Please choose an image before uploading.';
+      });
+      return;
+    }
+
+    setState(() {
+      _isUploadingAvatar = true;
+      _avatarError = null;
+    });
+
+    try {
+      final mimeType = lookupMimeType(
+        _selectedAvatarPath ?? _selectedAvatarName!,
+        headerBytes: _selectedAvatarBytes,
+      );
+
+      final updatedPlayer = await PlayerApiService.uploadPlayerAvatar(
+        fileBytes: _selectedAvatarBytes!,
+        filename: _selectedAvatarName!,
+        mimeType: mimeType,
+      );
+
+      if (updatedPlayer != null) {
+        widget.onProfileUpdated(updatedPlayer);
+
+        if (mounted) {
+          setState(() {
+            _player = updatedPlayer;
+            _selectedAvatarBytes = null;
+            _selectedAvatarName = null;
+            _selectedAvatarPath = null;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Avatar updated successfully!'),
+              backgroundColor: Color(0xFF4ECDC4),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _avatarError = 'Failed to upload avatar. Please try again.';
+        });
+      }
+    } catch (e) {
+      SecureLogger.logError('Error uploading avatar', error: e);
+      setState(() {
+        _avatarError = 'An error occurred while uploading your avatar.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingAvatar = false;
         });
       }
     }
@@ -243,6 +353,111 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ],
                   ),
                 ),
+
+              _buildSectionTitle('Avatar'),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundImage: _selectedAvatarBytes != null
+                        ? MemoryImage(_selectedAvatarBytes!)
+                        : (_player?.avatarUrl != null && _player!.avatarUrl!.isNotEmpty
+                            ? NetworkImage(_player!.avatarUrl!)
+                            : null),
+                    child: (_selectedAvatarBytes == null &&
+                            (_player?.avatarUrl == null || _player!.avatarUrl!.isEmpty))
+                        ? Text(
+                            _player?.displayName
+                                    .substring(0, 1)
+                                    .toUpperCase() ??
+                                'P',
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: _isLoading || _isUploadingAvatar ? null : _pickAvatar,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4ECDC4),
+                            foregroundColor: Colors.white,
+                          ),
+                          icon: const Icon(Icons.photo_library),
+                          label: Text(
+                            _selectedAvatarBytes != null
+                                ? 'Change Selected Image'
+                                : 'Choose Image',
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          onPressed: _selectedAvatarBytes != null &&
+                                  !_isUploadingAvatar &&
+                                  !_isLoading
+                              ? _uploadAvatar
+                              : null,
+                          icon: _isUploadingAvatar
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
+                                  ),
+                                )
+                              : const Icon(Icons.cloud_upload, color: Color(0xFF4ECDC4)),
+                          label: Text(
+                            _isUploadingAvatar ? 'Uploading...' : 'Upload Avatar',
+                            style: const TextStyle(color: Color(0xFF4ECDC4)),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF4ECDC4)),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Accepted formats: PNG, JPG, JPEG, GIF, WebP • Max size 5MB.',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.6),
+                            fontSize: 12,
+                          ),
+                        ),
+                        if (_selectedAvatarName != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Text(
+                              _selectedAvatarName!,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (_avatarError != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _avatarError!,
+                  style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                ),
+              ],
+
+              const SizedBox(height: 24),
 
               // Bio Field
               _buildSectionTitle('Bio'),

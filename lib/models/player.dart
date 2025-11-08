@@ -1,5 +1,16 @@
 import 'player_profile.dart';
 
+String? _normalizeNullableString(dynamic value) {
+  if (value == null) return null;
+  if (value is String) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    if (trimmed.toLowerCase() == 'null') return null;
+    return trimmed;
+  }
+  return value.toString();
+}
+
 class Player {
   final int id;
   final String email;
@@ -22,6 +33,12 @@ class Player {
   });
 
   factory Player.fromJson(Map<String, dynamic> json) {
+    final avatarData = json['avatar'];
+    final resolvedAvatarUrl = _normalizeNullableString(
+      json['avatar_url'] ??
+          (avatarData is Map<String, dynamic> ? avatarData['url'] : null),
+    );
+
     return Player(
       id: json['id'] as int,
       email: json['email'] as String,
@@ -29,7 +46,7 @@ class Player {
       displayName: json['display_name'] as String? ?? json['username'] as String,
       totalScore: json['total_score'] as int? ?? 0,
       gamesPlayed: json['games_played'] as int? ?? 0,
-      avatarUrl: json['avatar_url'] as String?,
+      avatarUrl: resolvedAvatarUrl,
       profile: json['profile'] is Map<String, dynamic> 
           ? PlayerProfile.fromJson(json['profile'] as Map<String, dynamic>) 
           : null,

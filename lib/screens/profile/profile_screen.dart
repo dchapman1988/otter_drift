@@ -211,17 +211,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         CircleAvatar(
                           radius: 40,
                           backgroundColor: Colors.white.withOpacity(0.2),
-                          child: Text(
-                            _currentPlayer?.displayName
-                                    .substring(0, 1)
-                                    .toUpperCase() ??
-                                'P',
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
+                          backgroundImage: _currentPlayer?.avatarUrl != null
+                              ? NetworkImage(_currentPlayer!.avatarUrl!)
+                              : null,
+                          child: (_currentPlayer?.avatarUrl == null ||
+                                  _currentPlayer!.avatarUrl!.isEmpty)
+                              ? Text(
+                                  _currentPlayer?.displayName
+                                          .substring(0, 1)
+                                          .toUpperCase() ??
+                                      'P',
+                                  style: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : null,
                         ),
                         const SizedBox(height: 16),
                         Text(

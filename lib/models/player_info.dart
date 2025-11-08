@@ -8,9 +8,11 @@ class PlayerInfo {
   });
 
   factory PlayerInfo.fromJson(Map<String, dynamic> json) {
+    final avatarData = json['avatar'];
     return PlayerInfo(
       username: json['username'] as String,
-      avatarUrl: json['avatar_url'] as String?,
+      avatarUrl: json['avatar_url'] as String? ??
+          (avatarData is Map<String, dynamic> ? avatarData['url'] as String? : null),
     );
   }
 

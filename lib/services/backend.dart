@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
@@ -177,6 +179,19 @@ class BackendService {
       displayName: displayName,
       avatarUrl: avatarUrl,
       profile: profile,
+    );
+  }
+
+  /// Upload player avatar image
+  static Future<Player?> uploadPlayerAvatar({
+    required Uint8List fileBytes,
+    required String filename,
+    String? mimeType,
+  }) async {
+    return await PlayerApiService.uploadPlayerAvatar(
+      fileBytes: fileBytes,
+      filename: filename,
+      mimeType: mimeType,
     );
   }
 

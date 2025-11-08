@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -122,29 +124,39 @@ class PlayerAuthService {
       if (playerJson != null) {
         // Try to parse as JSON first (new format)
         try {
-          final decoded = Uri.decodeComponent(playerJson);
-          final parts = decoded.split('&');
-          final playerData = <String, dynamic>{};
-          
-          for (final part in parts) {
-            final keyValue = part.split('=');
-            if (keyValue.length == 2) {
-              final key = keyValue[0];
-              final value = keyValue[1];
-              
-              // Convert numeric values
-              if (key == 'id' || key == 'total_score' || key == 'games_played') {
-                playerData[key] = int.tryParse(value) ?? 0;
-              } else {
-                playerData[key] = value;
+          final decodedJson = jsonDecode(playerJson) as Map<String, dynamic>;
+          _cachedPlayer = Player.fromJson(decodedJson);
+          return _cachedPlayer;
+        } catch (jsonError) {
+          SecureLogger.logError('Failed to parse player data as JSON', error: jsonError);
+
+          // Fallback to legacy query-string format
+          try {
+            final decoded = Uri.decodeComponent(playerJson);
+            final parts = decoded.split('&');
+            final playerData = <String, dynamic>{};
+
+            for (final part in parts) {
+              final keyValue = part.split('=');
+              if (keyValue.length == 2) {
+                final key = keyValue[0];
+                final value = keyValue[1];
+
+                if (key == 'id' || key == 'total_score' || key == 'games_played') {
+                  playerData[key] = int.tryParse(value) ?? 0;
+                } else if (value.toLowerCase() == 'null' || value.isEmpty) {
+                  playerData[key] = null;
+                } else {
+                  playerData[key] = value;
+                }
               }
             }
+
+            _cachedPlayer = Player.fromJson(playerData);
+            return _cachedPlayer;
+          } catch (legacyError) {
+            SecureLogger.logError('Failed to parse player data from legacy format', error: legacyError);
           }
-          
-          _cachedPlayer = Player.fromJson(playerData);
-          return _cachedPlayer;
-        } catch (e) {
-          SecureLogger.logError('Failed to parse player data', error: e);
         }
       }
       
@@ -344,11 +356,8 @@ class PlayerAuthService {
       final storedToken = await _storage.read(key: _tokenKey);
       SecureLogger.logDebug('Token verification: stored=${storedToken != null}, length=${storedToken?.length ?? 0}');
       
-      // Store player data as query string for easy parsing
-      final playerQueryString = Uri(queryParameters: player.toJson().map(
-        (key, value) => MapEntry(key, value.toString()),
-      )).query;
-      await _storage.write(key: _playerKey, value: playerQueryString);
+      final sanitizedPlayerMap = _sanitizePlayerData(player.toJson());
+      await _storage.write(key: _playerKey, value: jsonEncode(sanitizedPlayerMap));
       SecureLogger.logDebug('Player data stored successfully');
       
       _cachedToken = token;
@@ -357,6 +366,23 @@ class PlayerAuthService {
       SecureLogger.logDebug('Auth data caching completed');
     } catch (e) {
       SecureLogger.logError('Failed to store player auth data', error: e);
+      rethrow;
+    }
+  }
+
+  /// Update stored player data while preserving the existing token
+  static Future<void> updateStoredPlayer(Player player, {String? token}) async {
+    try {
+      final effectiveToken = token ?? await getToken();
+      if (effectiveToken == null) {
+        SecureLogger.logError('Cannot update stored player data: token is null');
+        return;
+      }
+
+      await _storeAuthData(effectiveToken, player);
+      SecureLogger.logDebug('Stored updated player data successfully');
+    } catch (e) {
+      SecureLogger.logError('Failed to update stored player data', error: e);
       rethrow;
     }
   }
@@ -456,6 +482,36 @@ class PlayerAuthService {
       return true;
     }
   }
+}
+
+Map<String, dynamic> _sanitizePlayerData(Map<String, dynamic> input) {
+  final result = <String, dynamic>{};
+
+  input.forEach((key, value) {
+    if (value == null) {
+      return;
+    }
+
+    if (value is String) {
+      final trimmed = value.trim();
+      if (trimmed.isEmpty) return;
+      if (trimmed.toLowerCase() == 'null') return;
+      result[key] = trimmed;
+      return;
+    }
+
+    if (value is Map<String, dynamic>) {
+      final nested = _sanitizePlayerData(value);
+      if (nested.isNotEmpty) {
+        result[key] = nested;
+      }
+      return;
+    }
+
+    result[key] = value;
+  });
+
+  return result;
 }
 
 /// Result class for authentication operations

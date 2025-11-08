@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 import '../models/player.dart';
 import '../models/player_profile.dart';
 import '../models/player_achievements.dart';
@@ -86,6 +89,56 @@ class PlayerApiService {
       return null;
     } catch (e) {
       SecureLogger.logError('Failed to update player profile', error: e);
+      return null;
+    }
+  }
+
+  /// Upload player avatar image
+  static Future<Player?> uploadPlayerAvatar({
+    required Uint8List fileBytes,
+    required String filename,
+    String? mimeType,
+  }) async {
+    try {
+      SecureLogger.logDebug(
+        'Uploading player avatar (size: ${fileBytes.length} bytes, filename: $filename)',
+      );
+
+      final formData = FormData.fromMap({
+        'player[avatar]': MultipartFile.fromBytes(
+          fileBytes,
+          filename: filename,
+          contentType:
+              mimeType != null ? MediaType.parse(mimeType) : null,
+        ),
+      });
+
+      final response = await ApiService.patch(
+        '/api/v1/players/profile',
+        data: formData,
+        options: Options(
+          headers: {
+            if (mimeType != null) 'X-Upload-Content-Type': mimeType,
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final playerData =
+            response.data['player'] as Map<String, dynamic>? ??
+            response.data as Map<String, dynamic>;
+        final player = Player.fromJson(playerData);
+
+        await _storeAuthData(await PlayerAuthService.getToken(), player);
+
+        SecureLogger.logDebug('Player avatar uploaded successfully');
+        return player;
+      }
+
+      SecureLogger.logError('Avatar upload failed with status ${response.statusCode}');
+      return null;
+    } catch (e) {
+      SecureLogger.logError('Failed to upload player avatar', error: e);
       return null;
     }
   }
@@ -340,11 +393,15 @@ class PlayerApiService {
   }
 
   /// Helper method to store auth data (duplicated from PlayerAuthService to avoid circular dependency)
-  static Future<void> _storeAuthData(String token, Player player) async {
+  static Future<void> _storeAuthData(String? token, Player player) async {
+    if (token == null) {
+      SecureLogger.logError('Cannot store player auth data: token is null');
+      return;
+    }
+
     try {
-      // This would normally be handled by PlayerAuthService
-      // but we include it here to avoid circular dependencies
-      SecureLogger.logDebug('Storing updated player auth data');
+      await PlayerAuthService.updateStoredPlayer(player, token: token);
+      SecureLogger.logDebug('Stored updated player auth data successfully');
     } catch (e) {
       SecureLogger.logError(
         'Failed to store updated player auth data',

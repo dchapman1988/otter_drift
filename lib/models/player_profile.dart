@@ -1,3 +1,14 @@
+String? _sanitizeProfileString(dynamic value) {
+  if (value == null) return null;
+  if (value is String) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+    if (trimmed.toLowerCase() == 'null') return null;
+    return trimmed;
+  }
+  return value.toString();
+}
+
 class PlayerProfile {
   final String? bio;
   final String? favoriteOtterFact;
@@ -15,11 +26,13 @@ class PlayerProfile {
 
   factory PlayerProfile.fromJson(Map<String, dynamic> json) {
     return PlayerProfile(
-      bio: json['bio'] as String?,
-      favoriteOtterFact: json['favorite_otter_fact'] as String?,
-      title: json['title'] as String?,
-      profileBannerUrl: json['profile_banner_url'] as String?,
-      location: json['location'] as String?,
+      bio: _sanitizeProfileString(json['bio']),
+      favoriteOtterFact:
+          _sanitizeProfileString(json['favorite_otter_fact']),
+      title: _sanitizeProfileString(json['title']),
+      profileBannerUrl:
+          _sanitizeProfileString(json['profile_banner_url']),
+      location: _sanitizeProfileString(json['location']),
     );
   }
 
