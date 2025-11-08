@@ -1,5 +1,6 @@
 import 'dart:async';
 import '../models/player.dart';
+import 'player_api_service.dart';
 import 'player_auth_service.dart';
 import 'secure_logger.dart';
 
@@ -36,6 +37,7 @@ class AuthStateService {
         final player = await PlayerAuthService.getCurrentPlayer();
         SecureLogger.logDebug('AuthStateService: Got player: ${player?.username}');
         _updateState(AuthState.authenticated, player);
+        await _refreshPlayerFromApi();
       } else {
         SecureLogger.logDebug('AuthStateService: Setting state to unauthenticated');
         _updateState(AuthState.unauthenticated, null);
@@ -62,6 +64,7 @@ class AuthStateService {
     _updateState(AuthState.authenticated, player);
     SecureLogger.logDebug('AuthStateService: State updated to: $_currentState');
     SecureLogger.logDebug('AuthStateService: Current player set to: ${_currentPlayer?.username}');
+    unawaited(_refreshPlayerFromApi());
   }
 
   /// Handle logout
@@ -80,6 +83,7 @@ class AuthStateService {
     if (_currentState == AuthState.authenticated) {
       final player = await PlayerAuthService.getCurrentPlayer();
       _updateState(AuthState.authenticated, player);
+      await _refreshPlayerFromApi();
     }
   }
 
@@ -96,6 +100,25 @@ class AuthStateService {
   void dispose() {
     _authStateController.close();
     _playerController.close();
+  }
+
+  Future<void> _refreshPlayerFromApi() async {
+    if (_currentState != AuthState.authenticated) {
+      return;
+    }
+
+    try {
+      SecureLogger.logDebug('AuthStateService: Refreshing player from API');
+      final latestPlayer = await PlayerApiService.getPlayerProfile();
+      if (latestPlayer != null) {
+        SecureLogger.logDebug('AuthStateService: Player refreshed from API: ${latestPlayer.username}');
+        _updateState(AuthState.authenticated, latestPlayer);
+      } else {
+        SecureLogger.logDebug('AuthStateService: Player refresh returned null, keeping existing data');
+      }
+    } catch (e) {
+      SecureLogger.logError('AuthStateService: Failed to refresh player from API', error: e);
+    }
   }
 }
 
