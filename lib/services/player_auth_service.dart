@@ -44,7 +44,7 @@ class PlayerAuthService {
         }
       } catch (e) {
         SecureLogger.logError('Error checking JWT expiration', error: e);
-        SecureLogger.logDebug('Token that caused error: ${token.length > 50 ? token.substring(0, 50) + "..." : token}');
+        SecureLogger.logDebug('Token that caused error: ${token.length > 50 ? "${token.substring(0, 50)}..." : token}');
         // If we can't decode the token, it's invalid
         await clearAuth();
         return false;
@@ -89,7 +89,7 @@ class PlayerAuthService {
           if (!isExpired) {
             _cachedToken = token;
             SecureLogger.logDebug('PlayerAuthService.getToken: Retrieved token from storage (length: ${token.length})');
-            SecureLogger.logDebug('PlayerAuthService.getToken: Token preview: ${token.length > 20 ? token.substring(0, 20) + "..." : token}');
+            SecureLogger.logDebug('PlayerAuthService.getToken: Token preview: ${token.length > 20 ? "${token.substring(0, 20)}..." : token}');
             return token;
           } else {
             // Token is expired, remove it
@@ -98,7 +98,7 @@ class PlayerAuthService {
           }
         } catch (e) {
           SecureLogger.logError('Error checking storage token expiration', error: e);
-          SecureLogger.logDebug('Storage token that caused error: ${token.length > 50 ? token.substring(0, 50) + "..." : token}');
+          SecureLogger.logDebug('Storage token that caused error: ${token.length > 50 ? "${token.substring(0, 50)}..." : token}');
           await clearAuth();
         }
       } else {
@@ -400,7 +400,7 @@ class PlayerAuthService {
     final authHeader = response.headers.value('authorization');
     
     if (authHeader != null) {
-      SecureLogger.logDebug('Found authorization header: ${authHeader.length > 20 ? authHeader.substring(0, 20) + "..." : authHeader}');
+      SecureLogger.logDebug('Found authorization header: ${authHeader.length > 20 ? "${authHeader.substring(0, 20)}..." : authHeader}');
       SecureLogger.logDebug('Full authorization header: $authHeader');
       
       // Extract just the JWT token part (without "Bearer " prefix) for storage
@@ -415,7 +415,7 @@ class PlayerAuthService {
       }
       
       SecureLogger.logAuth('Successfully extracted JWT token from Authorization header (length: ${token.length})');
-      SecureLogger.logDebug('Token preview: ${token.length > 20 ? token.substring(0, 20) + "..." : token}');
+      SecureLogger.logDebug('Token preview: ${token.length > 20 ? "${token.substring(0, 20)}..." : token}');
       return token; // Return just the JWT token part
     }
 

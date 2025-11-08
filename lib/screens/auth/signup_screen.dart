@@ -7,10 +7,10 @@ class SignUpScreen extends StatefulWidget {
   final VoidCallback onGuestMode;
 
   const SignUpScreen({
-    Key? key,
+    super.key,
     required this.onSignUpSuccess,
     required this.onGuestMode,
-  }) : super(key: key);
+  });
 
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
@@ -284,9 +284,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       padding: const EdgeInsets.all(12),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
+                        color: Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         _errorMessage!,

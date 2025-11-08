@@ -1,5 +1,6 @@
-import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/foundation.dart';
 import 'otter.dart';
 
 class Heart extends SpriteComponent
@@ -15,8 +16,18 @@ class Heart extends SpriteComponent
   Future<void> onLoad() async {
     try {
       sprite = await game.loadSprite('sprites/heart.jpg');
-    } catch (e) {
-      print('Error loading heart sprite: $e');
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('Heart::onLoad failed to load sprite: $e');
+      }
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: e,
+          stack: stackTrace,
+          context: ErrorDescription('Loading heart sprite'),
+          library: 'Heart component',
+        ),
+      );
     }
 
     // Add circular hitbox for collision detection

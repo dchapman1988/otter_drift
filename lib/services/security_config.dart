@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:io';
 
 /// Security configuration class that validates and manages authentication credentials
@@ -6,9 +7,9 @@ class SecurityConfig {
   static const int _expectedApiKeyLength = 64; // 64-character hex string
   
   // Build-time configuration
-  static const String? _envApiKey = String.fromEnvironment('API_KEY');
-  static const String? _envClientId = String.fromEnvironment('CLIENT_ID');
-  static const String? _envBaseUrl = String.fromEnvironment('API_BASE');
+  static const String _envApiKey = String.fromEnvironment('API_KEY');
+  static const String _envClientId = String.fromEnvironment('CLIENT_ID');
+  static const String _envBaseUrl = String.fromEnvironment('API_BASE');
   static const bool _isDebugMode = bool.fromEnvironment('dart.vm.product') == false;
   
   // Certificate pins for different environments
@@ -26,28 +27,31 @@ class SecurityConfig {
 
   /// Get the client ID with validation
   static String getClientId() {
-    final clientId = (_envClientId != null && _envClientId!.isNotEmpty) ? _envClientId! : _defaultClientId;
+    final trimmedClientId = _envClientId.trim();
+    final clientId = trimmedClientId.isNotEmpty ? trimmedClientId : _defaultClientId;
     _validateClientId(clientId);
     return clientId;
   }
 
   /// Get the API key with validation
   static String getApiKey() {
-    if (_envApiKey == null || _envApiKey!.trim().isEmpty) {
+    final apiKey = _envApiKey.trim();
+    if (apiKey.isEmpty) {
       throw SecurityException(
         'API_KEY environment variable is required. '
         'Use --dart-define=API_KEY=your_api_key_here when building.'
       );
     }
     
-    _validateApiKey(_envApiKey!.trim());
-    return _envApiKey!.trim();
+    _validateApiKey(apiKey);
+    return apiKey;
   }
 
   /// Get the base URL with validation
   static String getBaseUrl() {
-    if (_envBaseUrl != null && _envBaseUrl!.isNotEmpty) {
-      return _envBaseUrl!;
+    final baseUrl = _envBaseUrl.trim();
+    if (baseUrl.isNotEmpty) {
+      return baseUrl;
     }
     
     if (Platform.isAndroid) {
@@ -119,9 +123,9 @@ class SecurityConfig {
       'clientId': getClientId(),
       'maskedApiKey': getMaskedApiKey(),
       'baseUrl': getBaseUrl(),
-      'hasApiKey': _envApiKey != null && _envApiKey!.trim().isNotEmpty,
-      'hasClientId': _envClientId != null && _envClientId!.trim().isNotEmpty,
-      'hasBaseUrl': _envBaseUrl != null && _envBaseUrl!.trim().isNotEmpty,
+      'hasApiKey': _envApiKey.trim().isNotEmpty,
+      'hasClientId': _envClientId.trim().isNotEmpty,
+      'hasBaseUrl': _envBaseUrl.trim().isNotEmpty,
     };
   }
 
@@ -133,11 +137,25 @@ class SecurityConfig {
       getBaseUrl();
       
       if (isDebugMode()) {
-        print('🔧 SecurityConfig: Configuration validated successfully');
-        print('🔧 Environment Info: ${getEnvironmentInfo()}');
+        developer.log(
+          'Configuration validated successfully',
+          name: 'SecurityConfig',
+          level: 800,
+        );
+        developer.log(
+          'Environment Info: ${getEnvironmentInfo()}',
+          name: 'SecurityConfig',
+          level: 800,
+        );
       }
-    } catch (e) {
-      print('❌ SecurityConfig: Configuration validation failed: $e');
+    } catch (e, stackTrace) {
+      developer.log(
+        'Configuration validation failed',
+        name: 'SecurityConfig',
+        level: 1000,
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }

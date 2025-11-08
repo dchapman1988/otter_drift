@@ -9,10 +9,10 @@ class LeaderboardWidget extends StatefulWidget {
   final bool showLimitSelector;
 
   const LeaderboardWidget({
-    Key? key,
+    super.key,
     this.initialLimit = 100,
     this.showLimitSelector = true,
-  }) : super(key: key);
+  });
 
   @override
   State<LeaderboardWidget> createState() => _LeaderboardWidgetState();
@@ -95,7 +95,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
         backgroundColor: const Color(0xFF2C1B15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.white.withOpacity(0.2)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
         ),
         title: const Text(
           'Select Leaderboard Size',
@@ -342,13 +342,13 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         color: isCurrentUser
-            ? const Color(0xFF4ECDC4).withOpacity(0.2)
-            : Colors.white.withOpacity(0.05),
+            ? const Color(0xFF4ECDC4).withValues(alpha: 0.2)
+            : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isCurrentUser
-              ? const Color(0xFF4ECDC4).withOpacity(0.5)
-              : Colors.white.withOpacity(0.1),
+              ? const Color(0xFF4ECDC4).withValues(alpha: 0.5)
+              : Colors.white.withValues(alpha: 0.1),
           width: isCurrentUser ? 2 : 1,
         ),
       ),
@@ -374,9 +374,9 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: entry.isGuest
                 ? const Center(
@@ -458,7 +458,7 @@ class _LeaderboardWidgetState extends State<LeaderboardWidget> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(

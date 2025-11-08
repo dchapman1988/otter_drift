@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../services/backend.dart';
+import '../../services/secure_logger.dart';
 import '../../models/player.dart';
 import 'signup_screen.dart';
 
@@ -8,10 +10,10 @@ class LoginScreen extends StatefulWidget {
   final VoidCallback onGuestMode;
 
   const LoginScreen({
-    Key? key,
+    super.key,
     required this.onLoginSuccess,
     required this.onGuestMode,
-  }) : super(key: key);
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -47,15 +49,27 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (result.isSuccess && result.player != null) {
-        print('DEBUG: Login successful, calling onLoginSuccess with player: ${result.player!.username}');
-        print('DEBUG: Login result details: isSuccess=${result.isSuccess}, player=${result.player != null}');
+        if (kDebugMode) {
+          debugPrint(
+            'LoginScreen::signIn success user=${result.player!.username} '
+            'isSuccess=${result.isSuccess}',
+          );
+        }
         widget.onLoginSuccess(result.player!);
       } else {
         setState(() {
           _errorMessage = result.message ?? 'Sign in failed';
         });
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      SecureLogger.logError(
+        'Player sign-in failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      if (kDebugMode) {
+        debugPrint('LoginScreen::signIn error=$e');
+      }
       setState(() {
         _errorMessage = 'Network error occurred';
       });
@@ -195,9 +209,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       _errorMessage!,

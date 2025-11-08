@@ -1,5 +1,6 @@
-import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Otter extends SpriteComponent with HasCollisionDetection, HasGameReference {
@@ -16,8 +17,18 @@ class Otter extends SpriteComponent with HasCollisionDetection, HasGameReference
   Future<void> onLoad() async {
     try {
       sprite = await game.loadSprite('sprites/otter.jpg');
-    } catch (e) {
-      print('Error loading otter sprite: $e');
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('Otter::onLoad failed to load sprite: $e');
+      }
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: e,
+          stack: stackTrace,
+          context: ErrorDescription('Loading otter sprite'),
+          library: 'Otter component',
+        ),
+      );
     }
     
     // Position at 70% of screen height

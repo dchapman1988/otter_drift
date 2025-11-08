@@ -64,8 +64,12 @@ class AuthService {
       }
       
       return null;
-    } catch (e) {
-      print('AuthService.getToken error: $e');
+    } catch (e, stackTrace) {
+      SecureLogger.logError(
+        'Failed to retrieve token from secure storage',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }
@@ -157,8 +161,12 @@ class AuthService {
         return DateTime.fromMillisecondsSinceEpoch(exp * 1000);
       }
       return null;
-    } catch (e) {
-      print('AuthService.getTokenExpiration error: $e');
+    } catch (e, stackTrace) {
+      SecureLogger.logError(
+        'Failed to decode token expiration',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }
@@ -171,8 +179,12 @@ class AuthService {
       
       final now = DateTime.now();
       return expiration.isBefore(now.add(threshold));
-    } catch (e) {
-      print('AuthService.isTokenExpiringSoon error: $e');
+    } catch (e, stackTrace) {
+      SecureLogger.logError(
+        'Failed to determine token expiration threshold',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return true;
     }
   }
@@ -184,8 +196,12 @@ class AuthService {
       if (token == null) return null;
       
       return JwtDecoder.decode(token);
-    } catch (e) {
-      print('AuthService.getTokenPayload error: $e');
+    } catch (e, stackTrace) {
+      SecureLogger.logError(
+        'Failed to decode token payload',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return null;
     }
   }

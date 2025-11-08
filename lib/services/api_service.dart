@@ -237,11 +237,18 @@ class ApiService {
     try {
       // Use a simple endpoint that doesn't require authentication
       final response = await dio.get('/hello');
-      print('GET /hello - Status: ${response.statusCode}');
-      print('Response: ${response.data}');
+      SecureLogger.logResponse(
+        response.statusCode ?? 0,
+        '/hello',
+        body: response.data,
+      );
       return response.statusCode == 200;
-    } catch (e) {
-      print('GET /hello - Error: $e');
+    } catch (e, stackTrace) {
+      SecureLogger.logError(
+        'GET /hello failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return false;
     }
   }

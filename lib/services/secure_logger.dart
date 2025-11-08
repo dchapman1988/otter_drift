@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
+
 import 'security_config.dart';
 
 /// Secure logging system that masks sensitive data in production
@@ -34,11 +36,24 @@ class SecureLogger {
   }
   
   /// Log errors
-  static void logError(String message, {dynamic error, StackTrace? stackTrace}) {
-    _log('ERROR', message, {
-      'error': error?.toString(),
-      'stackTrace': stackTrace?.toString(),
-    });
+  static void logError(
+    String message, {
+    dynamic error,
+    StackTrace? stackTrace,
+    Map<String, dynamic>? data,
+  }) {
+    final sanitizedData = _sanitizeData(data);
+    final logDetails = <String, dynamic>{
+      if (error != null) 'error': error.toString(),
+      if (sanitizedData != null && sanitizedData.isNotEmpty) 'data': sanitizedData,
+    };
+
+    _log(
+      'ERROR',
+      message,
+      logDetails.isEmpty ? null : logDetails,
+      stackTrace: stackTrace,
+    );
   }
   
   /// Log security events
@@ -62,19 +77,60 @@ class SecureLogger {
   }
   
   /// Internal logging method
-  static void _log(String level, String message, Map<String, dynamic>? data) {
+  static void _log(
+    String level,
+    String message,
+    Map<String, dynamic>? data, {
+    StackTrace? stackTrace,
+  }) {
     final timestamp = DateTime.now().toIso8601String();
-    final logMessage = '$_logPrefix [$level] $timestamp: $message';
-    
-    print(logMessage);
-    
+    final baseMessage = '$timestamp: $message';
+    final loggerName = '$_logPrefix/$level';
+    final logLevel = _levelToValue(level);
+
+    developer.log(
+      baseMessage,
+      name: loggerName,
+      level: logLevel,
+      stackTrace: stackTrace,
+    );
+
     if (data != null && data.isNotEmpty) {
       try {
         final jsonData = jsonEncode(data);
-        print('$_logPrefix [$level] Data: $jsonData');
-      } catch (e) {
-        print('$_logPrefix [$level] Data: $data');
+        developer.log(
+          '$timestamp: $jsonData',
+          name: '$loggerName/data',
+          level: logLevel,
+        );
+      } catch (error, stack) {
+        developer.log(
+          '$timestamp: $data',
+          name: '$loggerName/data',
+          level: logLevel,
+          error: error,
+          stackTrace: stack,
+        );
       }
+    }
+  }
+
+  static int _levelToValue(String level) {
+    switch (level) {
+      case 'DEBUG':
+        return 500;
+      case 'INFO':
+        return 800;
+      case 'REQUEST':
+      case 'RESPONSE':
+      case 'AUTH':
+        return 900;
+      case 'SECURITY':
+        return 950;
+      case 'ERROR':
+        return 1000;
+      default:
+        return 800;
     }
   }
   

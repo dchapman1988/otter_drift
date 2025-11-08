@@ -70,16 +70,25 @@ class BackendService {
         },
       );
 
-      print('POST /api/v1/game_sessions - Status: ${response.statusCode}');
-      print('Response: ${response.data}');
+      SecureLogger.logResponse(
+        response.statusCode ?? 0,
+        '/api/v1/game_sessions',
+        body: response.data,
+      );
 
       return response.data;
-    } catch (e) {
-      print('POST /api/v1/game_sessions - Error: $e');
-      if (e is DioException) {
-        print('Status code: ${e.response?.statusCode}');
-        print('Response data: ${e.response?.data}');
-      }
+    } catch (e, stackTrace) {
+      SecureLogger.logError(
+        'POST /api/v1/game_sessions failed',
+        error: e,
+        stackTrace: stackTrace,
+        data: e is DioException
+            ? {
+                'statusCode': e.response?.statusCode,
+                'responseData': e.response?.data,
+              }
+            : null,
+      );
       return null;
     }
   }
@@ -91,19 +100,28 @@ class BackendService {
         queryParameters: {'limit': limit},
       );
 
-      print('GET /api/v1/scores/top - Status: ${response.statusCode}');
-      print('Response: ${response.data}');
+      SecureLogger.logResponse(
+        response.statusCode ?? 0,
+        '/api/v1/scores/top',
+        body: response.data,
+      );
 
       if (response.data is Map && response.data.containsKey('scores')) {
         return List<Map<String, dynamic>>.from(response.data['scores']);
       }
       return [];
-    } catch (e) {
-      print('GET /api/v1/scores/top - Error: $e');
-      if (e is DioException) {
-        print('Status code: ${e.response?.statusCode}');
-        print('Response data: ${e.response?.data}');
-      }
+    } catch (e, stackTrace) {
+      SecureLogger.logError(
+        'GET /api/v1/scores/top failed',
+        error: e,
+        stackTrace: stackTrace,
+        data: e is DioException
+            ? {
+                'statusCode': e.response?.statusCode,
+                'responseData': e.response?.data,
+              }
+            : null,
+      );
       return null;
     }
   }

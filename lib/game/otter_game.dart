@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:flame/game.dart';
 import 'package:flame/events.dart';
-import 'package:flame/components.dart';
-import 'package:uuid/uuid.dart';
+import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:uuid/uuid.dart';
 
 import 'components/otter.dart';
 import 'components/log.dart';
@@ -109,16 +109,21 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
 
   @override
   void onTapDown(TapDownEvent event) {
-    print(
-      'Game onTapDown: hearts=$hearts, localPos=(${event.localPosition.x}, ${event.localPosition.y})',
-    );
+    if (kDebugMode) {
+      debugPrint(
+        'OtterGame::onTapDown hearts=$hearts '
+        'localPos=(${event.localPosition.x}, ${event.localPosition.y})',
+      );
+    }
     // If game over, let HUD handle the tap
     if (hearts <= 0) {
       final handled = _hud.handleTap(
         event.localPosition.x,
         event.localPosition.y,
       );
-      print('HUD handled tap: $handled');
+      if (kDebugMode) {
+        debugPrint('OtterGame::hudHandledTap handled=$handled');
+      }
       if (handled) return;
     } else {
       // Move otter to tap position

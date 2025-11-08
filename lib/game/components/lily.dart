@@ -1,5 +1,6 @@
-import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/foundation.dart';
 import 'otter.dart';
 
 class Lily extends SpriteComponent with HasCollisionDetection, HasGameReference {
@@ -14,8 +15,18 @@ class Lily extends SpriteComponent with HasCollisionDetection, HasGameReference 
   Future<void> onLoad() async {
     try {
       sprite = await game.loadSprite('sprites/lily.jpg');
-    } catch (e) {
-      print('Error loading lily sprite: $e');
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('Lily::onLoad failed to load sprite: $e');
+      }
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: e,
+          stack: stackTrace,
+          context: ErrorDescription('Loading lily sprite'),
+          library: 'Lily component',
+        ),
+      );
     }
     
     // Add circular hitbox for collision detection

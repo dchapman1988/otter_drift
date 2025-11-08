@@ -7,9 +7,9 @@ class AchievementsList extends StatefulWidget {
   final String username;
 
   const AchievementsList({
-    Key? key,
+    super.key,
     required this.username,
-  }) : super(key: key);
+  });
 
   @override
   State<AchievementsList> createState() => _AchievementsListState();
@@ -183,9 +183,9 @@ class _AchievementsListState extends State<AchievementsList> {
       margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,9 +195,9 @@ class _AchievementsListState extends State<AchievementsList> {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
             ),
             child: Center(
               child: achievement.isBadgeUrlNetworkImage
@@ -257,10 +257,10 @@ class _AchievementsListState extends State<AchievementsList> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4ECDC4).withOpacity(0.2),
+                        color: const Color(0xFF4ECDC4).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: const Color(0xFF4ECDC4).withOpacity(0.5),
+                          color: const Color(0xFF4ECDC4).withValues(alpha: 0.5),
                         ),
                       ),
                       child: Row(

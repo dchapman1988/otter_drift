@@ -1,5 +1,6 @@
-import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
+import 'package:flutter/foundation.dart';
 import 'otter.dart';
 
 class Log extends SpriteComponent with HasCollisionDetection, HasGameReference {
@@ -15,8 +16,18 @@ class Log extends SpriteComponent with HasCollisionDetection, HasGameReference {
   Future<void> onLoad() async {
     try {
       sprite = await game.loadSprite('sprites/log.jpg');
-    } catch (e) {
-      print('Error loading log sprite: $e');
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('Log::onLoad failed to load sprite: $e');
+      }
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: e,
+          stack: stackTrace,
+          context: ErrorDescription('Loading log sprite'),
+          library: 'Log component',
+        ),
+      );
     }
 
     // Add circular hitbox with radius = min(width, height) * 0.35

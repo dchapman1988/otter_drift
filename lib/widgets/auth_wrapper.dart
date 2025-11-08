@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import '../services/auth_state_service.dart';
@@ -8,7 +9,7 @@ import '../screens/menu/main_menu_screen.dart';
 import '../game/otter_game.dart';
 
 class AuthWrapper extends StatefulWidget {
-  const AuthWrapper({Key? key}) : super(key: key);
+  const AuthWrapper({super.key});
 
   @override
   State<AuthWrapper> createState() => _AuthWrapperState();
@@ -34,7 +35,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   void _onLoginSuccess(Player player) {
-    print('DEBUG: AuthWrapper _onLoginSuccess called with player: ${player.username}');
+    if (kDebugMode) {
+      debugPrint('AuthWrapper::_onLoginSuccess player=${player.username}');
+    }
     _authStateService.onAuthSuccess(player);
   }
 
@@ -104,12 +107,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
               authStateService: _authStateService,
               onLogout: _onLogout,
             );
-
-          default:
-            return LoginScreen(
-              onLoginSuccess: _onLoginSuccess,
-              onGuestMode: _onGuestMode,
-            );
         }
       },
     );
@@ -127,10 +124,10 @@ class MainMenuWrapper extends StatelessWidget {
   final VoidCallback onLogout;
 
   const MainMenuWrapper({
-    Key? key,
+    super.key,
     required this.authStateService,
     required this.onLogout,
-  }) : super(key: key);
+  });
 
   void _startGame(BuildContext context, Player? player, bool isGuest) {
     Navigator.push(
@@ -154,9 +151,13 @@ class MainMenuWrapper extends StatelessWidget {
       builder: (context, snapshot) {
         final player = snapshot.data;
         final isGuest = authStateService.isGuestMode;
-        
-        print('DEBUG: MainMenuWrapper - player: ${player?.username ?? "null"}, isGuest: $isGuest');
-        print('DEBUG: MainMenuWrapper - snapshot.hasData: ${snapshot.hasData}, snapshot.data: ${snapshot.data?.username ?? "null"}');
+
+        if (kDebugMode) {
+          debugPrint(
+            'MainMenuWrapper::state player=${player?.username ?? "null"} '
+            'isGuest=$isGuest hasData=${snapshot.hasData}',
+          );
+        }
 
         return MainMenuScreen(
           player: player,
@@ -176,12 +177,12 @@ class GameScreen extends StatelessWidget {
   final VoidCallback onLogout;
 
   const GameScreen({
-    Key? key,
+    super.key,
     this.player,
     required this.isGuestMode,
     required this.authStateService,
     required this.onLogout,
-  }) : super(key: key);
+  });
 
   void _showProfile(BuildContext context) {
     if (player != null) {
@@ -204,7 +205,7 @@ class GameScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF2C1B15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.white.withOpacity(0.2)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
         ),
         title: const Text(
           'Paused',
@@ -273,9 +274,9 @@ class GameScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
                     ),
                     child: const Icon(
                       Icons.menu,
@@ -291,7 +292,7 @@ class GameScreen extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.black.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: isGuestMode ? Colors.orange : const Color(0xFF4ECDC4),

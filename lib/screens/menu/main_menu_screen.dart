@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/player.dart';
@@ -11,17 +12,21 @@ class MainMenuScreen extends StatelessWidget {
   final VoidCallback onLogout;
 
   const MainMenuScreen({
-    Key? key,
+    super.key,
     this.player,
     this.isGuestMode = false,
     required this.onStartGame,
     required this.onLogout,
-  }) : super(key: key);
+  });
 
   void _showProfile(BuildContext context) {
-    print('DEBUG: _showProfile called, player: $player');
+    if (kDebugMode) {
+      debugPrint('MainMenuScreen::_showProfile player=$player');
+    }
     if (player != null) {
-      print('DEBUG: Navigating to ProfileScreen');
+      if (kDebugMode) {
+        debugPrint('MainMenuScreen::navigating to ProfileScreen');
+      }
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -32,7 +37,9 @@ class MainMenuScreen extends StatelessWidget {
         ),
       );
     } else {
-      print('DEBUG: Player is null, cannot show profile');
+      if (kDebugMode) {
+        debugPrint('MainMenuScreen::player is null, cannot show profile');
+      }
     }
   }
 
@@ -43,7 +50,7 @@ class MainMenuScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF2C1B15),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: Colors.white.withOpacity(0.2)),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
         ),
         title: const Row(
           children: [
@@ -131,9 +138,9 @@ class MainMenuScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -142,7 +149,7 @@ class MainMenuScreen extends StatelessWidget {
                       Container(
                         width: 1,
                         height: 40,
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                       ),
                       _buildQuickStat('Games', '${player!.gamesPlayed}', Icons.games),
                     ],
@@ -167,7 +174,7 @@ class MainMenuScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 8,
-                  shadowColor: const Color(0xFF7B5E4F).withOpacity(0.5),
+                  shadowColor: const Color(0xFF7B5E4F).withValues(alpha: 0.5),
                 ),
               ),
               const SizedBox(height: 16),
@@ -176,7 +183,9 @@ class MainMenuScreen extends StatelessWidget {
               if (!isGuestMode) ...[
                 OutlinedButton.icon(
                   onPressed: () {
-                    print('DEBUG: Profile button pressed');
+                    if (kDebugMode) {
+                      debugPrint('MainMenuScreen::profile button pressed');
+                    }
                     _showProfile(context);
                   },
                   icon: const Icon(Icons.person),
@@ -252,7 +261,7 @@ class MainMenuScreen extends StatelessWidget {
                         backgroundColor: const Color(0xFF2C1B15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
-                          side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                          side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
                         ),
                         title: const Text(
                           'Sign Out',
@@ -284,7 +293,7 @@ class MainMenuScreen extends StatelessWidget {
                   icon: const Icon(Icons.logout, size: 18),
                   label: const Text('Sign Out'),
                   style: TextButton.styleFrom(
-                    foregroundColor: Colors.red.withOpacity(0.7),
+                    foregroundColor: Colors.red.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -297,7 +306,7 @@ class MainMenuScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                 ),
               ),
             ],
@@ -325,7 +334,7 @@ class MainMenuScreen extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12,
-            color: Colors.white.withOpacity(0.6),
+            color: Colors.white.withValues(alpha: 0.6),
           ),
         ),
       ],

@@ -1,4 +1,5 @@
 import 'package:flame/components.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class Hud extends Component with HasGameReference {
@@ -78,7 +79,7 @@ class Hud extends Component with HasGameReference {
       textRenderer: TextPaint(
         style: const TextStyle(
           fontSize: 36,
-          color: const Color(0xFFF59E0B), // Orange/amber
+          color: Color(0xFFF59E0B), // Orange/amber
           fontWeight: FontWeight.bold,
           shadows: [
             Shadow(offset: Offset(2, 2), blurRadius: 4, color: Colors.black87),
@@ -180,7 +181,9 @@ class Hud extends Component with HasGameReference {
   }
 
   bool handleTap(double x, double y) {
-    print('HUD handleTap called: x=$x, y=$y, gameOver=$_gameOver');
+    if (kDebugMode) {
+      debugPrint('Hud::handleTap x=$x y=$y gameOver=$_gameOver');
+    }
     if (!_gameOver) return false;
 
     final tapX = x;
@@ -202,15 +205,21 @@ class Hud extends Component with HasGameReference {
       40,
     );
 
-    print('Button rects - PlayAgain: $playAgainRect, Quit: $quitRect');
-    print('Tap point: ($tapX, $tapY)');
+    if (kDebugMode) {
+      debugPrint('Hud::buttonRects playAgain=$playAgainRect quit=$quitRect');
+      debugPrint('Hud::tapPoint ($tapX, $tapY)');
+    }
 
     if (playAgainRect.contains(Offset(tapX, tapY))) {
-      print('Play Again button tapped!');
+      if (kDebugMode) {
+        debugPrint('Hud::playAgain tapped');
+      }
       onPlayAgain?.call();
       return true;
     } else if (quitRect.contains(Offset(tapX, tapY))) {
-      print('Quit button tapped!');
+      if (kDebugMode) {
+        debugPrint('Hud::quit tapped');
+      }
       onQuit?.call();
       return true;
     }
