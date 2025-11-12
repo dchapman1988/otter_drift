@@ -3,7 +3,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart';
 import 'otter.dart';
 
-class Heart extends SpriteComponent
+class Heart extends SpriteAnimationComponent
     with HasCollisionDetection, HasGameReference {
   late CircleHitbox _hitbox;
   double _scrollSpeed = 120.0;
@@ -15,7 +15,18 @@ class Heart extends SpriteComponent
   @override
   Future<void> onLoad() async {
     try {
-      sprite = await game.loadSprite('sprites/heart.jpg');
+      final sheet = await game.images.load('sprites/heart_animated.png');
+      final frameWidth = sheet.width / 4;
+      final frameHeight = sheet.height.toDouble();
+
+      animation = SpriteAnimation.fromFrameData(
+        sheet,
+        SpriteAnimationData.sequenced(
+          amount: 4,
+          stepTime: 0.12,
+          textureSize: Vector2(frameWidth, frameHeight),
+        ),
+      );
     } catch (e, stackTrace) {
       if (kDebugMode) {
         debugPrint('Heart::onLoad failed to load sprite: $e');

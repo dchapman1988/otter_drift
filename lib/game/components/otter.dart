@@ -3,7 +3,8 @@ import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class Otter extends SpriteComponent with HasCollisionDetection, HasGameReference {
+class Otter extends SpriteAnimationComponent
+    with HasCollisionDetection, HasGameReference {
   late CircleHitbox _hitbox;
   double _targetX = 0;
   final double _maxSpeed = 800.0; // px/sec
@@ -16,7 +17,18 @@ class Otter extends SpriteComponent with HasCollisionDetection, HasGameReference
   @override
   Future<void> onLoad() async {
     try {
-      sprite = await game.loadSprite('sprites/otter.jpg');
+      final sheet = await game.images.load('sprites/otter_animated.png');
+      final frameWidth = sheet.width / 4;
+      final frameHeight = sheet.height.toDouble();
+
+      animation = SpriteAnimation.fromFrameData(
+        sheet,
+        SpriteAnimationData.sequenced(
+          amount: 4,
+          stepTime: 0.1,
+          textureSize: Vector2(frameWidth, frameHeight),
+        ),
+      );
     } catch (e, stackTrace) {
       if (kDebugMode) {
         debugPrint('Otter::onLoad failed to load sprite: $e');

@@ -2,10 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/player.dart';
+import '../../services/player_api_service.dart';
 import '../profile/profile_screen.dart';
 import '../leaderboard_screen.dart';
 
-class MainMenuScreen extends StatelessWidget {
+class MainMenuScreen extends StatefulWidget {
   final Player? player;
   final bool isGuestMode;
   final VoidCallback onStartGame;
@@ -19,11 +20,110 @@ class MainMenuScreen extends StatelessWidget {
     required this.onLogout,
   });
 
+  @override
+  State<MainMenuScreen> createState() => _MainMenuScreenState();
+}
+
+class _MainMenuScreenState extends State<MainMenuScreen> {
+  int? _totalScore;
+  int? _gamesPlayed;
+  bool _isLoadingStats = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  @override
+  void didUpdateWidget(MainMenuScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final playerChanged = oldWidget.player?.id != widget.player?.id;
+    final guestModeChanged = oldWidget.isGuestMode != widget.isGuestMode;
+    if (playerChanged || guestModeChanged) {
+      _loadStats();
+    }
+  }
+
+  Future<void> _loadStats() async {
+    if (!mounted) return;
+
+    if (widget.isGuestMode || widget.player == null) {
+      setState(() {
+        _totalScore = null;
+        _gamesPlayed = null;
+        _isLoadingStats = false;
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoadingStats = true;
+    });
+
+    try {
+      final stats = await PlayerApiService.getPlayerStats();
+      if (!mounted) return;
+
+      final totalScoreRaw = _extractStat(stats, 'total_score');
+      final gamesPlayedRaw = _extractStat(stats, 'games_played');
+
+      setState(() {
+        _totalScore = _parseStat(totalScoreRaw) ?? widget.player?.totalScore;
+        _gamesPlayed = _parseStat(gamesPlayedRaw) ?? widget.player?.gamesPlayed;
+        _isLoadingStats = false;
+      });
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('MainMenuScreen::_loadStats error=$e\n$stackTrace');
+      }
+      if (!mounted) return;
+      setState(() {
+        _totalScore = widget.player?.totalScore;
+        _gamesPlayed = widget.player?.gamesPlayed;
+        _isLoadingStats = false;
+      });
+    }
+  }
+
+  int? _parseStat(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is int) return raw;
+    if (raw is String) return int.tryParse(raw);
+    return null;
+  }
+
+  dynamic _extractStat(Map<String, dynamic>? stats, String snakeKey) {
+    if (stats == null) return null;
+    if (stats.containsKey(snakeKey)) {
+      return stats[snakeKey];
+    }
+
+    final camelKey = _snakeToCamel(snakeKey);
+    if (stats.containsKey(camelKey)) {
+      return stats[camelKey];
+    }
+
+    final nestedStats = stats['stats'];
+    if (nestedStats is Map<String, dynamic>) {
+      return _extractStat(nestedStats, snakeKey);
+    }
+
+    return null;
+  }
+
+  String _snakeToCamel(String input) {
+    return input.replaceAllMapped(RegExp(r'_([a-z])'), (match) {
+      final letter = match.group(1);
+      return letter != null ? letter.toUpperCase() : '';
+    });
+  }
+
   void _showProfile(BuildContext context) {
     if (kDebugMode) {
-      debugPrint('MainMenuScreen::_showProfile player=$player');
+      debugPrint('MainMenuScreen::_showProfile player=${widget.player}');
     }
-    if (player != null) {
+    if (widget.player != null) {
       if (kDebugMode) {
         debugPrint('MainMenuScreen::navigating to ProfileScreen');
       }
@@ -31,8 +131,8 @@ class MainMenuScreen extends StatelessWidget {
         context,
         MaterialPageRoute(
           builder: (context) => ProfileScreen(
-            player: player!,
-            onLogout: onLogout,
+            player: widget.player!,
+            onLogout: widget.onLogout,
           ),
         ),
       );
@@ -123,18 +223,20 @@ class MainMenuScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                isGuestMode ? 'Playing as Guest' : 'Welcome, ${player?.displayName ?? "Player"}!',
+                widget.isGuestMode
+                    ? 'Playing as Guest'
+                    : 'Welcome, ${widget.player?.displayName ?? "Player"}!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 18,
-                  color: isGuestMode ? Colors.orange : const Color(0xFF66A0C8),
+                  color: widget.isGuestMode ? Colors.orange : const Color(0xFF66A0C8),
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 48),
 
               // Player Stats Summary (if authenticated)
-              if (!isGuestMode && player != null) ...[
+              if (!widget.isGuestMode && widget.player != null) ...[
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -145,13 +247,21 @@ class MainMenuScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildQuickStat('Total Score', '${player!.totalScore}', Icons.star),
+                      _buildQuickStat(
+                        label: 'Total Score',
+                        value: _totalScore ?? widget.player?.totalScore,
+                        icon: Icons.star,
+                      ),
                       Container(
                         width: 1,
                         height: 40,
                         color: Colors.white.withValues(alpha: 0.2),
                       ),
-                      _buildQuickStat('Games', '${player!.gamesPlayed}', Icons.games),
+                      _buildQuickStat(
+                        label: 'Games',
+                        value: _gamesPlayed ?? widget.player?.gamesPlayed,
+                        icon: Icons.games,
+                      ),
                     ],
                   ),
                 ),
@@ -160,7 +270,7 @@ class MainMenuScreen extends StatelessWidget {
 
               // Main Menu Buttons
               ElevatedButton.icon(
-                onPressed: onStartGame,
+                onPressed: widget.onStartGame,
                 icon: const Icon(Icons.play_arrow, size: 32),
                 label: const Text(
                   'Start Game',
@@ -180,7 +290,7 @@ class MainMenuScreen extends StatelessWidget {
               const SizedBox(height: 16),
 
               // Profile Button (only for authenticated users)
-              if (!isGuestMode) ...[
+              if (!widget.isGuestMode) ...[
                 OutlinedButton.icon(
                   onPressed: () {
                     if (kDebugMode) {
@@ -252,7 +362,7 @@ class MainMenuScreen extends StatelessWidget {
               const Spacer(),
 
               // Sign Out Button (bottom)
-              if (!isGuestMode) ...[
+              if (!widget.isGuestMode) ...[
                 TextButton.icon(
                   onPressed: () {
                     showDialog(
@@ -279,7 +389,7 @@ class MainMenuScreen extends StatelessWidget {
                           TextButton(
                             onPressed: () {
                               Navigator.pop(context);
-                              onLogout();
+                              widget.onLogout();
                             },
                             child: const Text(
                               'Sign Out',
@@ -316,13 +426,20 @@ class MainMenuScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickStat(String label, String value, IconData icon) {
+  Widget _buildQuickStat({
+    required String label,
+    required int? value,
+    required IconData icon,
+  }) {
+    final displayValue =
+        _isLoadingStats && value == null ? '...' : (value ?? 0).toString();
+
     return Column(
       children: [
         Icon(icon, color: const Color(0xFF66A0C8), size: 24),
         const SizedBox(height: 8),
         Text(
-          value,
+          displayValue,
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
