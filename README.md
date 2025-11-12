@@ -76,7 +76,7 @@ Happy drifting! 🦦
 
 ## Media
 <img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 17 59 PM" src="https://github.com/user-attachments/assets/5adb68fd-1fa7-4ccd-a5d2-52f14cbfc9cb" />
-<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 17 13 PM" src="https://github.com/user-attachments/assets/a713e381-77f2-4462-8b0a-643684f449b3" />
+<img width="517" height="1029" alt="Screenshot 2025-11-12 at 2 27 56 PM" src="https://github.com/user-attachments/assets/97459875-1033-43a5-ba9f-2a39a4bbdb34" />
 <img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 17 45 PM" src="https://github.com/user-attachments/assets/921dab53-74fd-4bd4-9287-9b1296aef85f" />
 <img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 18 16 PM" src="https://github.com/user-attachments/assets/c4e7c0d9-37d7-4e63-9063-a4fb821c0aef" />
 <img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 18 21 PM" src="https://github.com/user-attachments/assets/6100a19c-c2b1-4e5a-9260-4f40f8f55e3a" />
