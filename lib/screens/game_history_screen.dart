@@ -6,10 +6,7 @@ import '../services/player_api_service.dart';
 class GameHistoryScreen extends StatefulWidget {
   final String username;
 
-  const GameHistoryScreen({
-    super.key,
-    required this.username,
-  });
+  const GameHistoryScreen({super.key, required this.username});
 
   @override
   State<GameHistoryScreen> createState() => _GameHistoryScreenState();
@@ -55,10 +52,7 @@ class _GameHistoryScreenState extends State<GameHistoryScreen> {
         setState(() {
           if (loadMore && _gameHistory != null && gameHistory != null) {
             // Append new games to existing list
-            final updatedGames = [
-              ..._gameHistory!.games,
-              ...gameHistory.games,
-            ];
+            final updatedGames = [..._gameHistory!.games, ...gameHistory.games];
             _gameHistory = GameHistoryResponse(
               username: gameHistory.username,
               totalGames: gameHistory.totalGames,
@@ -165,149 +159,143 @@ class _GameHistoryScreenState extends State<GameHistoryScreen> {
                 ),
               )
             : _errorMessage != null
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: Colors.red[300],
+                        size: 48,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 16,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () => _loadGameHistory(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Retry'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4ECDC4),
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : _gameHistory == null || _gameHistory!.games.isEmpty
+            ? Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.history,
+                        color: Colors.white38,
+                        size: 64,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No game history yet',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Start playing to see your game history!',
+                        style: TextStyle(color: Colors.white54, fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : RefreshIndicator(
+                onRefresh: () => _loadGameHistory(),
+                color: const Color(0xFF4ECDC4),
+                child: Column(
+                  children: [
+                    // Header with total games
+                    Container(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: Colors.red[300],
-                            size: 48,
-                          ),
-                          const SizedBox(height: 16),
                           Text(
-                            _errorMessage!,
+                            'Total Games: ${_gameHistory!.totalGames}',
                             style: const TextStyle(
-                              color: Colors.white70,
                               fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white70,
                             ),
-                            textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: () => _loadGameHistory(),
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Retry'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4ECDC4),
-                              foregroundColor: Colors.white,
+                          Text(
+                            'Showing ${_gameHistory!.games.length} of ${_gameHistory!.total}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.white54,
                             ),
                           ),
                         ],
                       ),
                     ),
-                  )
-                : _gameHistory == null || _gameHistory!.games.isEmpty
-                    ? Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
-                                Icons.history,
-                                color: Colors.white38,
-                                size: 64,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No game history yet',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Start playing to see your game history!',
-                                style: TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () => _loadGameHistory(),
-                        color: const Color(0xFF4ECDC4),
-                        child: Column(
-                          children: [
-                            // Header with total games
-                            Container(
+                    // Game list
+                    Expanded(
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount:
+                            _gameHistory!.games.length +
+                            (_gameHistory!.hasMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          if (index >= _gameHistory!.games.length) {
+                            // Load more button
+                            return Padding(
                               padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Total Games: ${_gameHistory!.totalGames}',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                  Text(
-                                    'Showing ${_gameHistory!.games.length} of ${_gameHistory!.total}',
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white54,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Game list
-                            Expanded(
-                              child: ListView.builder(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount: _gameHistory!.games.length +
-                                    (_gameHistory!.hasMore ? 1 : 0),
-                                itemBuilder: (context, index) {
-                                  if (index >= _gameHistory!.games.length) {
-                                    // Load more button
-                                    return Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Center(
-                                        child: _isLoadingMore
-                                            ? const CircularProgressIndicator(
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<Color>(
-                                                  Color(0xFF4ECDC4),
-                                                ),
-                                              )
-                                            : ElevatedButton.icon(
-                                                onPressed: () =>
-                                                    _loadGameHistory(
-                                                      loadMore: true,
-                                                    ),
-                                                icon: const Icon(
-                                                  Icons.expand_more,
-                                                ),
-                                                label: const Text('Load More'),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      const Color(0xFF4ECDC4),
-                                                  foregroundColor: Colors.white,
-                                                ),
-                                              ),
+                              child: Center(
+                                child: _isLoadingMore
+                                    ? const CircularProgressIndicator(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              Color(0xFF4ECDC4),
+                                            ),
+                                      )
+                                    : ElevatedButton.icon(
+                                        onPressed: () =>
+                                            _loadGameHistory(loadMore: true),
+                                        icon: const Icon(Icons.expand_more),
+                                        label: const Text('Load More'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(
+                                            0xFF4ECDC4,
+                                          ),
+                                          foregroundColor: Colors.white,
+                                        ),
                                       ),
-                                    );
-                                  }
-
-                                  final game = _gameHistory!.games[index];
-                                  return _buildGameHistoryEntry(game);
-                                },
                               ),
-                            ),
-                          ],
-                        ),
+                            );
+                          }
+
+                          final game = _gameHistory!.games[index];
+                          return _buildGameHistoryEntry(game);
+                        },
                       ),
+                    ),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -330,11 +318,7 @@ class _GameHistoryScreenState extends State<GameHistoryScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(
-                    Icons.star,
-                    color: Color(0xFF4ECDC4),
-                    size: 20,
-                  ),
+                  const Icon(Icons.star, color: Color(0xFF4ECDC4), size: 20),
                   const SizedBox(width: 8),
                   Text(
                     _formatScore(game.finalScore),
@@ -348,18 +332,11 @@ class _GameHistoryScreenState extends State<GameHistoryScreen> {
               ),
               Row(
                 children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 14,
-                    color: Colors.white54,
-                  ),
+                  Icon(Icons.access_time, size: 14, color: Colors.white54),
                   const SizedBox(width: 4),
                   Text(
                     _formatDateTime(game.endedAt),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.white54,
-                    ),
+                    style: const TextStyle(fontSize: 12, color: Colors.white54),
                   ),
                 ],
               ),
@@ -371,10 +348,7 @@ class _GameHistoryScreenState extends State<GameHistoryScreen> {
             spacing: 16,
             runSpacing: 8,
             children: [
-              _buildStatChip(
-                Icons.timer,
-                _formatDuration(game.gameDuration),
-              ),
+              _buildStatChip(Icons.timer, _formatDuration(game.gameDuration)),
               _buildStatChip(
                 Icons.landscape,
                 '${game.obstaclesAvoided} obstacles',
@@ -383,10 +357,7 @@ class _GameHistoryScreenState extends State<GameHistoryScreen> {
                 Icons.local_florist,
                 '${game.liliesCollected} lilies',
               ),
-              _buildStatChip(
-                Icons.favorite,
-                '${game.heartsCollected} hearts',
-              ),
+              _buildStatChip(Icons.favorite, '${game.heartsCollected} hearts'),
               _buildStatChip(
                 Icons.speed,
                 '${game.maxSpeedReached.toStringAsFixed(1)} max speed',
@@ -401,9 +372,7 @@ class _GameHistoryScreenState extends State<GameHistoryScreen> {
               decoration: BoxDecoration(
                 color: Colors.orange.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.orange.withValues(alpha: 0.3),
-                ),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -435,21 +404,13 @@ class _GameHistoryScreenState extends State<GameHistoryScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: 14,
-          color: Colors.white54,
-        ),
+        Icon(icon, size: 14, color: Colors.white54),
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.white70,
-          ),
+          style: const TextStyle(fontSize: 12, color: Colors.white70),
         ),
       ],
     );
   }
 }
-

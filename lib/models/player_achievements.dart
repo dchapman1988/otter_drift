@@ -17,9 +17,11 @@ class PlayerAchievements {
       username: json['username'] as String,
       totalAchievements: json['total_achievements'] as int,
       achievements: achievementsList
-          .map((achievementJson) => PlayerAchievement.fromJson(
-                achievementJson as Map<String, dynamic>,
-              ))
+          .map(
+            (achievementJson) => PlayerAchievement.fromJson(
+              achievementJson as Map<String, dynamic>,
+            ),
+          )
           .toList(),
     );
   }
@@ -37,4 +39,3 @@ class PlayerAchievements {
     return 'PlayerAchievements(username: $username, totalAchievements: $totalAchievements, achievements: ${achievements.length})';
   }
 }
-

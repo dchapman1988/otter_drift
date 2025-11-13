@@ -27,11 +27,9 @@ class PlayerProfile {
   factory PlayerProfile.fromJson(Map<String, dynamic> json) {
     return PlayerProfile(
       bio: _sanitizeProfileString(json['bio']),
-      favoriteOtterFact:
-          _sanitizeProfileString(json['favorite_otter_fact']),
+      favoriteOtterFact: _sanitizeProfileString(json['favorite_otter_fact']),
       title: _sanitizeProfileString(json['title']),
-      profileBannerUrl:
-          _sanitizeProfileString(json['profile_banner_url']),
+      profileBannerUrl: _sanitizeProfileString(json['profile_banner_url']),
       location: _sanitizeProfileString(json['location']),
     );
   }
@@ -64,10 +62,10 @@ class PlayerProfile {
 
   bool get isEmpty {
     return bio?.isEmpty != false &&
-           favoriteOtterFact?.isEmpty != false &&
-           title?.isEmpty != false &&
-           profileBannerUrl?.isEmpty != false &&
-           location?.isEmpty != false;
+        favoriteOtterFact?.isEmpty != false &&
+        title?.isEmpty != false &&
+        profileBannerUrl?.isEmpty != false &&
+        location?.isEmpty != false;
   }
 
   @override
@@ -95,4 +93,3 @@ class PlayerProfile {
         location.hashCode;
   }
 }
-

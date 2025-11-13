@@ -10,11 +10,9 @@ import 'secure_logger.dart';
 class PlayerAuthService {
   static const String _tokenKey = 'player_jwt_token';
   static const String _playerKey = 'player_data';
-  
+
   static const FlutterSecureStorage _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock_this_device,
     ),
@@ -31,29 +29,38 @@ class PlayerAuthService {
         SecureLogger.logDebug('No player token found - user not authenticated');
         return false;
       }
-      
+
       // Check if token is expired
       try {
         final isExpired = JwtDecoder.isExpired(token);
-        SecureLogger.logDebug('JWT expiration check: isExpired=$isExpired, token length=${token.length}');
-        
+        SecureLogger.logDebug(
+          'JWT expiration check: isExpired=$isExpired, token length=${token.length}',
+        );
+
         if (isExpired) {
-          SecureLogger.logAuth('Player token expired - clearing and marking as unauthenticated');
+          SecureLogger.logAuth(
+            'Player token expired - clearing and marking as unauthenticated',
+          );
           await clearAuth();
           return false;
         }
       } catch (e) {
         SecureLogger.logError('Error checking JWT expiration', error: e);
-        SecureLogger.logDebug('Token that caused error: ${token.length > 50 ? "${token.substring(0, 50)}..." : token}');
+        SecureLogger.logDebug(
+          'Token that caused error: ${token.length > 50 ? "${token.substring(0, 50)}..." : token}',
+        );
         // If we can't decode the token, it's invalid
         await clearAuth();
         return false;
       }
-      
+
       SecureLogger.logDebug('Player is authenticated with valid token');
       return true;
     } catch (e) {
-      SecureLogger.logError('Error checking player authentication status', error: e);
+      SecureLogger.logError(
+        'Error checking player authentication status',
+        error: e,
+      );
       return false;
     }
   }
@@ -65,17 +72,26 @@ class PlayerAuthService {
         // Check if cached token is still valid
         try {
           final isExpired = JwtDecoder.isExpired(_cachedToken!);
-          SecureLogger.logDebug('PlayerAuthService.getToken: Cached token expiration check: isExpired=$isExpired');
-          
+          SecureLogger.logDebug(
+            'PlayerAuthService.getToken: Cached token expiration check: isExpired=$isExpired',
+          );
+
           if (!isExpired) {
-            SecureLogger.logDebug('PlayerAuthService.getToken: Returning cached token (length: ${_cachedToken!.length})');
+            SecureLogger.logDebug(
+              'PlayerAuthService.getToken: Returning cached token (length: ${_cachedToken!.length})',
+            );
             return _cachedToken;
           } else {
-            SecureLogger.logDebug('PlayerAuthService.getToken: Cached token is expired, clearing it');
+            SecureLogger.logDebug(
+              'PlayerAuthService.getToken: Cached token is expired, clearing it',
+            );
             _cachedToken = null;
           }
         } catch (e) {
-          SecureLogger.logError('Error checking cached token expiration', error: e);
+          SecureLogger.logError(
+            'Error checking cached token expiration',
+            error: e,
+          );
           _cachedToken = null;
         }
       }
@@ -84,28 +100,45 @@ class PlayerAuthService {
       if (token != null) {
         try {
           final isExpired = JwtDecoder.isExpired(token);
-          SecureLogger.logDebug('PlayerAuthService.getToken: Storage token expiration check: isExpired=$isExpired');
-          
+          SecureLogger.logDebug(
+            'PlayerAuthService.getToken: Storage token expiration check: isExpired=$isExpired',
+          );
+
           if (!isExpired) {
             _cachedToken = token;
-            SecureLogger.logDebug('PlayerAuthService.getToken: Retrieved token from storage (length: ${token.length})');
-            SecureLogger.logDebug('PlayerAuthService.getToken: Token preview: ${token.length > 20 ? "${token.substring(0, 20)}..." : token}');
+            SecureLogger.logDebug(
+              'PlayerAuthService.getToken: Retrieved token from storage (length: ${token.length})',
+            );
+            SecureLogger.logDebug(
+              'PlayerAuthService.getToken: Token preview: ${token.length > 20 ? "${token.substring(0, 20)}..." : token}',
+            );
             return token;
           } else {
             // Token is expired, remove it
-            SecureLogger.logDebug('PlayerAuthService.getToken: Token from storage is expired, clearing auth');
+            SecureLogger.logDebug(
+              'PlayerAuthService.getToken: Token from storage is expired, clearing auth',
+            );
             await clearAuth();
           }
         } catch (e) {
-          SecureLogger.logError('Error checking storage token expiration', error: e);
-          SecureLogger.logDebug('Storage token that caused error: ${token.length > 50 ? "${token.substring(0, 50)}..." : token}');
+          SecureLogger.logError(
+            'Error checking storage token expiration',
+            error: e,
+          );
+          SecureLogger.logDebug(
+            'Storage token that caused error: ${token.length > 50 ? "${token.substring(0, 50)}..." : token}',
+          );
           await clearAuth();
         }
       } else {
-        SecureLogger.logDebug('PlayerAuthService.getToken: No token found in storage');
-        SecureLogger.logDebug('PlayerAuthService.getToken: Storage key used: $_tokenKey');
+        SecureLogger.logDebug(
+          'PlayerAuthService.getToken: No token found in storage',
+        );
+        SecureLogger.logDebug(
+          'PlayerAuthService.getToken: Storage key used: $_tokenKey',
+        );
       }
-      
+
       return null;
     } catch (e) {
       SecureLogger.logError('PlayerAuthService.getToken error', error: e);
@@ -128,7 +161,10 @@ class PlayerAuthService {
           _cachedPlayer = Player.fromJson(decodedJson);
           return _cachedPlayer;
         } catch (jsonError) {
-          SecureLogger.logError('Failed to parse player data as JSON', error: jsonError);
+          SecureLogger.logError(
+            'Failed to parse player data as JSON',
+            error: jsonError,
+          );
 
           // Fallback to legacy query-string format
           try {
@@ -142,7 +178,9 @@ class PlayerAuthService {
                 final key = keyValue[0];
                 final value = keyValue[1];
 
-                if (key == 'id' || key == 'total_score' || key == 'games_played') {
+                if (key == 'id' ||
+                    key == 'total_score' ||
+                    key == 'games_played') {
                   playerData[key] = int.tryParse(value) ?? 0;
                 } else if (value.toLowerCase() == 'null' || value.isEmpty) {
                   playerData[key] = null;
@@ -155,14 +193,20 @@ class PlayerAuthService {
             _cachedPlayer = Player.fromJson(playerData);
             return _cachedPlayer;
           } catch (legacyError) {
-            SecureLogger.logError('Failed to parse player data from legacy format', error: legacyError);
+            SecureLogger.logError(
+              'Failed to parse player data from legacy format',
+              error: legacyError,
+            );
           }
         }
       }
-      
+
       return null;
     } catch (e) {
-      SecureLogger.logError('PlayerAuthService.getCurrentPlayer error', error: e);
+      SecureLogger.logError(
+        'PlayerAuthService.getCurrentPlayer error',
+        error: e,
+      );
       return null;
     }
   }
@@ -176,28 +220,35 @@ class PlayerAuthService {
   }) async {
     try {
       SecureLogger.logAuth('Starting player sign up process');
-      
-      final response = await ApiService.post('/players.json', data: {
-        'player': {
-          'email': email,
-          'username': username,
-          'password': password,
-          'password_confirmation': passwordConfirmation,
-        }
-      });
 
-      SecureLogger.logResponse(response.statusCode ?? 0, '/players', body: response.data);
+      final response = await ApiService.post(
+        '/players.json',
+        data: {
+          'player': {
+            'email': email,
+            'username': username,
+            'password': password,
+            'password_confirmation': passwordConfirmation,
+          },
+        },
+      );
+
+      SecureLogger.logResponse(
+        response.statusCode ?? 0,
+        '/players',
+        body: response.data,
+      );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final token = _extractTokenFromResponse(response);
         final player = _extractPlayerFromResponse(response);
-        
+
         if (token != null && player != null) {
           await _storeAuthData(token, player);
-          SecureLogger.logAuth('Player sign up successful', data: {
-            'playerId': player.id,
-            'username': player.username,
-          });
+          SecureLogger.logAuth(
+            'Player sign up successful',
+            data: {'playerId': player.id, 'username': player.username},
+          );
           return AuthResult.success(player: player);
         }
       }
@@ -205,10 +256,7 @@ class PlayerAuthService {
       // Handle validation errors
       if (response.statusCode == 422) {
         final errors = response.data['errors'] as Map<String, dynamic>?;
-        return AuthResult.failure(
-          message: 'Validation failed',
-          errors: errors,
-        );
+        return AuthResult.failure(message: 'Validation failed', errors: errors);
       }
 
       return AuthResult.failure(
@@ -220,12 +268,15 @@ class PlayerAuthService {
         final response = e.response;
         if (response?.statusCode == 422) {
           // Log the full response for debugging
-          SecureLogger.logError('422 Validation Error Response', error: response?.data);
-          
+          SecureLogger.logError(
+            '422 Validation Error Response',
+            error: response?.data,
+          );
+
           final errors = response?.data['errors'] as Map<String, dynamic>?;
           final message = response?.data['message'] as String?;
           final error = response?.data['error'] as String?;
-          
+
           return AuthResult.failure(
             message: message ?? error ?? 'Validation failed',
             errors: errors,
@@ -233,11 +284,12 @@ class PlayerAuthService {
         }
         // Log other error responses
         SecureLogger.logError('Sign up error response', error: response?.data);
-        
+
         return AuthResult.failure(
-          message: response?.data['message'] as String? ?? 
-                   response?.data['error'] as String? ?? 
-                   'Sign up failed',
+          message:
+              response?.data['message'] as String? ??
+              response?.data['error'] as String? ??
+              'Sign up failed',
         );
       }
       return AuthResult.failure(message: 'Network error occurred');
@@ -251,15 +303,19 @@ class PlayerAuthService {
   }) async {
     try {
       SecureLogger.logAuth('Starting player sign in process');
-      
-      final response = await ApiService.post('/players/sign_in.json', data: {
-        'player': {
-          'email': email,
-          'password': password,
-        }
-      });
 
-      SecureLogger.logResponse(response.statusCode ?? 0, '/players/sign_in', body: response.data);
+      final response = await ApiService.post(
+        '/players/sign_in.json',
+        data: {
+          'player': {'email': email, 'password': password},
+        },
+      );
+
+      SecureLogger.logResponse(
+        response.statusCode ?? 0,
+        '/players/sign_in',
+        body: response.data,
+      );
       SecureLogger.logDebug('Response headers: ${response.headers.map}');
 
       if (response.statusCode == 200) {
@@ -267,27 +323,36 @@ class PlayerAuthService {
         SecureLogger.logDebug('Response status: ${response.statusCode}');
         SecureLogger.logDebug('Response headers: ${response.headers.map}');
         SecureLogger.logDebug('Response body: ${response.data}');
-        
+
         final token = _extractTokenFromResponse(response);
         final player = _extractPlayerFromResponse(response);
-        
-        SecureLogger.logDebug('Sign in response processing: token=${token != null ? "present" : "null"}, player=${player != null ? "present" : "null"}');
-        
+
+        SecureLogger.logDebug(
+          'Sign in response processing: token=${token != null ? "present" : "null"}, player=${player != null ? "present" : "null"}',
+        );
+
         if (token != null && player != null) {
-          SecureLogger.logDebug('Both token and player extracted successfully, storing auth data...');
+          SecureLogger.logDebug(
+            'Both token and player extracted successfully, storing auth data...',
+          );
           await _storeAuthData(token, player);
-          SecureLogger.logAuth('Player sign in successful', data: {
-            'playerId': player.id,
-            'username': player.username,
-            'tokenLength': token.length,
-          });
+          SecureLogger.logAuth(
+            'Player sign in successful',
+            data: {
+              'playerId': player.id,
+              'username': player.username,
+              'tokenLength': token.length,
+            },
+          );
           return AuthResult.success(player: player);
         } else if (player == null) {
           SecureLogger.logError('Failed to extract player from response');
           return AuthResult.failure(message: 'Invalid player data received');
         } else {
           SecureLogger.logError('Failed to extract JWT token from response');
-          return AuthResult.failure(message: 'No authentication token received');
+          return AuthResult.failure(
+            message: 'No authentication token received',
+          );
         }
       }
 
@@ -310,14 +375,17 @@ class PlayerAuthService {
   static Future<bool> signOut() async {
     try {
       SecureLogger.logAuth('Starting player sign out process');
-      
+
       // Call the backend sign out endpoint
       try {
         await ApiService.delete('/players/sign_out.json');
         SecureLogger.logAuth('Backend sign out successful');
       } catch (e) {
         // Even if backend call fails, we should clear local auth
-        SecureLogger.logError('Backend sign out failed, but clearing local auth', error: e);
+        SecureLogger.logError(
+          'Backend sign out failed, but clearing local auth',
+          error: e,
+        );
       }
 
       // Clear local authentication data
@@ -346,23 +414,30 @@ class PlayerAuthService {
   /// Store authentication data securely
   static Future<void> _storeAuthData(String token, Player player) async {
     try {
-      SecureLogger.logDebug('Storing auth data: token length=${token.length}, player id=${player.id}');
+      SecureLogger.logDebug(
+        'Storing auth data: token length=${token.length}, player id=${player.id}',
+      );
       SecureLogger.logDebug('Storage key: $_tokenKey');
-      
+
       await _storage.write(key: _tokenKey, value: token);
       SecureLogger.logDebug('Token stored successfully');
-      
+
       // Verify token was stored
       final storedToken = await _storage.read(key: _tokenKey);
-      SecureLogger.logDebug('Token verification: stored=${storedToken != null}, length=${storedToken?.length ?? 0}');
-      
+      SecureLogger.logDebug(
+        'Token verification: stored=${storedToken != null}, length=${storedToken?.length ?? 0}',
+      );
+
       final sanitizedPlayerMap = _sanitizePlayerData(player.toJson());
-      await _storage.write(key: _playerKey, value: jsonEncode(sanitizedPlayerMap));
+      await _storage.write(
+        key: _playerKey,
+        value: jsonEncode(sanitizedPlayerMap),
+      );
       SecureLogger.logDebug('Player data stored successfully');
-      
+
       _cachedToken = token;
       _cachedPlayer = player;
-      
+
       SecureLogger.logDebug('Auth data caching completed');
     } catch (e) {
       SecureLogger.logError('Failed to store player auth data', error: e);
@@ -375,7 +450,9 @@ class PlayerAuthService {
     try {
       final effectiveToken = token ?? await getToken();
       if (effectiveToken == null) {
-        SecureLogger.logError('Cannot update stored player data: token is null');
+        SecureLogger.logError(
+          'Cannot update stored player data: token is null',
+        );
         return;
       }
 
@@ -391,18 +468,20 @@ class PlayerAuthService {
   static String? _extractTokenFromResponse(Response response) {
     // The token is in the Authorization response header
     // Rails devise-jwt sends it as: "Bearer <token>"
-    
+
     SecureLogger.logDebug('=== JWT Token Extraction Debug ===');
     SecureLogger.logDebug('Response headers: ${response.headers.map}');
     SecureLogger.logDebug('Response status: ${response.statusCode}');
-    
+
     // Try to get authorization header (Dio lowercases header names)
     final authHeader = response.headers.value('authorization');
-    
+
     if (authHeader != null) {
-      SecureLogger.logDebug('Found authorization header: ${authHeader.length > 20 ? "${authHeader.substring(0, 20)}..." : authHeader}');
+      SecureLogger.logDebug(
+        'Found authorization header: ${authHeader.length > 20 ? "${authHeader.substring(0, 20)}..." : authHeader}',
+      );
       SecureLogger.logDebug('Full authorization header: $authHeader');
-      
+
       // Extract just the JWT token part (without "Bearer " prefix) for storage
       // But we'll add "Bearer " back when sending requests
       String token;
@@ -413,9 +492,13 @@ class PlayerAuthService {
       } else {
         token = authHeader.trim();
       }
-      
-      SecureLogger.logAuth('Successfully extracted JWT token from Authorization header (length: ${token.length})');
-      SecureLogger.logDebug('Token preview: ${token.length > 20 ? "${token.substring(0, 20)}..." : token}');
+
+      SecureLogger.logAuth(
+        'Successfully extracted JWT token from Authorization header (length: ${token.length})',
+      );
+      SecureLogger.logDebug(
+        'Token preview: ${token.length > 20 ? "${token.substring(0, 20)}..." : token}',
+      );
       return token; // Return just the JWT token part
     }
 
@@ -426,9 +509,11 @@ class PlayerAuthService {
       SecureLogger.logDebug('Found token in response body');
       return token;
     }
-    
+
     SecureLogger.logError('No JWT token found in response');
-    SecureLogger.logDebug('Available headers: ${response.headers.map.keys.toList()}');
+    SecureLogger.logDebug(
+      'Available headers: ${response.headers.map.keys.toList()}',
+    );
     SecureLogger.logDebug('=== End JWT Token Extraction Debug ===');
     return null;
   }
@@ -440,9 +525,10 @@ class PlayerAuthService {
       if (data == null) return null;
 
       // Check for player data in various possible locations
-      final playerData = data['player'] as Map<String, dynamic>? ??
-                        data['user'] as Map<String, dynamic>? ??
-                        data;
+      final playerData =
+          data['player'] as Map<String, dynamic>? ??
+          data['user'] as Map<String, dynamic>? ??
+          data;
 
       return Player.fromJson(playerData);
     } catch (e) {
@@ -456,7 +542,7 @@ class PlayerAuthService {
     try {
       final token = await getToken();
       if (token == null) return null;
-      
+
       final decodedToken = JwtDecoder.decode(token);
       final exp = decodedToken['exp'] as int?;
       if (exp != null) {
@@ -464,21 +550,29 @@ class PlayerAuthService {
       }
       return null;
     } catch (e) {
-      SecureLogger.logError('PlayerAuthService.getTokenExpiration error', error: e);
+      SecureLogger.logError(
+        'PlayerAuthService.getTokenExpiration error',
+        error: e,
+      );
       return null;
     }
   }
 
   /// Check if token will expire within the specified duration
-  static Future<bool> isTokenExpiringSoon({Duration threshold = const Duration(minutes: 5)}) async {
+  static Future<bool> isTokenExpiringSoon({
+    Duration threshold = const Duration(minutes: 5),
+  }) async {
     try {
       final expiration = await getTokenExpiration();
       if (expiration == null) return true;
-      
+
       final now = DateTime.now();
       return expiration.isBefore(now.add(threshold));
     } catch (e) {
-      SecureLogger.logError('PlayerAuthService.isTokenExpiringSoon error', error: e);
+      SecureLogger.logError(
+        'PlayerAuthService.isTokenExpiringSoon error',
+        error: e,
+      );
       return true;
     }
   }
@@ -529,21 +623,13 @@ class AuthResult {
   });
 
   factory AuthResult.success({required Player player}) {
-    return AuthResult._(
-      isSuccess: true,
-      player: player,
-    );
+    return AuthResult._(isSuccess: true, player: player);
   }
 
   factory AuthResult.failure({
     required String message,
     Map<String, dynamic>? errors,
   }) {
-    return AuthResult._(
-      isSuccess: false,
-      message: message,
-      errors: errors,
-    );
+    return AuthResult._(isSuccess: false, message: message, errors: errors);
   }
 }
-

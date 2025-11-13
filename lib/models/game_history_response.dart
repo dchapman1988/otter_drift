@@ -28,9 +28,10 @@ class GameHistoryResponse {
       username: player['username'] as String? ?? '',
       totalGames: player['total_games'] as int? ?? 0,
       games: gamesList
-          .map((gameJson) => GameHistoryEntry.fromJson(
-                gameJson as Map<String, dynamic>,
-              ))
+          .map(
+            (gameJson) =>
+                GameHistoryEntry.fromJson(gameJson as Map<String, dynamic>),
+          )
           .toList(),
       limit: pagination['limit'] as int? ?? 20,
       offset: pagination['offset'] as int? ?? 0,
@@ -60,4 +61,3 @@ class GameHistoryResponse {
     return 'GameHistoryResponse(username: $username, totalGames: $totalGames, returned: $returned/$total)';
   }
 }
-

@@ -15,9 +15,10 @@ class LeaderboardResponse {
     final leaderboardList = json['leaderboard'] as List<dynamic>? ?? [];
     return LeaderboardResponse(
       leaderboard: leaderboardList
-          .map((entryJson) => LeaderboardEntry.fromJson(
-                entryJson as Map<String, dynamic>,
-              ))
+          .map(
+            (entryJson) =>
+                LeaderboardEntry.fromJson(entryJson as Map<String, dynamic>),
+          )
           .toList(),
       totalEntries: json['total_entries'] as int,
       limit: json['limit'] as int,
@@ -37,4 +38,3 @@ class LeaderboardResponse {
     return 'LeaderboardResponse(totalEntries: $totalEntries, limit: $limit, entries: ${leaderboard.length})';
   }
 }
-

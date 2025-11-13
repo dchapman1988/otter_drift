@@ -4,9 +4,9 @@ class SeededRandom {
   final Random _random;
   final int _seed;
 
-  SeededRandom({int? seed}) 
-      : _seed = seed ?? DateTime.now().millisecondsSinceEpoch,
-        _random = Random(seed ?? DateTime.now().millisecondsSinceEpoch);
+  SeededRandom({int? seed})
+    : _seed = seed ?? DateTime.now().millisecondsSinceEpoch,
+      _random = Random(seed ?? DateTime.now().millisecondsSinceEpoch);
 
   int get seed => _seed;
 
@@ -20,7 +20,7 @@ class SeededRandom {
   int range(int min, int max) => min + _random.nextInt(max - min);
 
   // Generate a random double between min (inclusive) and max (exclusive)
-  double rangeDouble(double min, double max) => 
+  double rangeDouble(double min, double max) =>
       min + _random.nextDouble() * (max - min);
 
   // Generate a random boolean
@@ -36,5 +36,3 @@ class SeededRandom {
     return -log(1.0 - u) * meanInterval;
   }
 }
-
-

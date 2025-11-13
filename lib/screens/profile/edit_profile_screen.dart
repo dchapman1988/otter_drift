@@ -66,7 +66,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       // Fetch the latest player profile data from the backend
       final player = await PlayerApiService.getPlayerProfile();
-      
+
       if (mounted && player != null) {
         _populateFormFromPlayer(player);
 
@@ -80,11 +80,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         // Fallback to using the passed player data if available
         _populateFormFromPlayer(widget.player);
-        
+
         setState(() {
           _player = widget.player;
           _isLoading = false;
-          _validationErrors = {'general': ['Failed to load latest profile data. Showing cached data.']};
+          _validationErrors = {
+            'general': [
+              'Failed to load latest profile data. Showing cached data.',
+            ],
+          };
         });
       }
     }
@@ -102,7 +106,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   String? _getFieldError(String fieldName) {
     if (_validationErrors == null) return null;
-    
+
     final errors = _validationErrors![fieldName];
     if (errors is List && errors.isNotEmpty) {
       return errors.first;
@@ -122,16 +126,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     try {
       final profile = PlayerProfile(
-        bio: _bioController.text.trim().isEmpty ? null : _bioController.text.trim(),
-        favoriteOtterFact: _favoriteOtterFactController.text.trim().isEmpty 
-            ? null 
+        bio: _bioController.text.trim().isEmpty
+            ? null
+            : _bioController.text.trim(),
+        favoriteOtterFact: _favoriteOtterFactController.text.trim().isEmpty
+            ? null
             : _favoriteOtterFactController.text.trim(),
-        title: _titleController.text.trim().isEmpty ? null : _titleController.text.trim(),
-        profileBannerUrl: _profileBannerUrlController.text.trim().isEmpty 
-            ? null 
+        title: _titleController.text.trim().isEmpty
+            ? null
+            : _titleController.text.trim(),
+        profileBannerUrl: _profileBannerUrlController.text.trim().isEmpty
+            ? null
             : _profileBannerUrlController.text.trim(),
-        location: _locationController.text.trim().isEmpty 
-            ? null 
+        location: _locationController.text.trim().isEmpty
+            ? null
             : _locationController.text.trim(),
       );
 
@@ -142,7 +150,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (updatedPlayer != null) {
         SecureLogger.logDebug('Profile updated successfully');
         widget.onProfileUpdated(updatedPlayer);
-        
+
         if (mounted) {
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -155,13 +163,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         }
       } else {
         setState(() {
-          _validationErrors = {'general': ['Failed to update profile. Please try again.']};
+          _validationErrors = {
+            'general': ['Failed to update profile. Please try again.'],
+          };
         });
       }
     } catch (e) {
       SecureLogger.logError('Error updating profile', error: e);
       setState(() {
-        _validationErrors = {'general': ['An error occurred while updating your profile.']};
+        _validationErrors = {
+          'general': ['An error occurred while updating your profile.'],
+        };
       });
     } finally {
       if (mounted) {
@@ -174,7 +186,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _pickAvatar() async {
     try {
-      final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+      final pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+      );
       if (pickedFile == null) {
         return;
       }
@@ -315,7 +329,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ],
         ],
       ),
-      body: _isLoading 
+      body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
@@ -327,341 +341,420 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // General error message
-              if (_validationErrors?['general'] != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.error, color: Colors.red, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _validationErrors!['general'] is List
-                              ? _validationErrors!['general'].first
-                              : _validationErrors!['general'].toString(),
-                          style: const TextStyle(color: Colors.red),
+                  children: [
+                    // General error message
+                    if (_validationErrors?['general'] != null)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.red.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.error,
+                              color: Colors.red,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _validationErrors!['general'] is List
+                                    ? _validationErrors!['general'].first
+                                    : _validationErrors!['general'].toString(),
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    _buildSectionTitle('Avatar'),
+                    const SizedBox(height: 12),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundColor: Colors.white.withValues(alpha: 0.1),
+                          backgroundImage: _selectedAvatarBytes != null
+                              ? MemoryImage(_selectedAvatarBytes!)
+                              : (_player?.avatarUrl != null &&
+                                        _player!.avatarUrl!.isNotEmpty
+                                    ? NetworkImage(_player!.avatarUrl!)
+                                    : null),
+                          child:
+                              (_selectedAvatarBytes == null &&
+                                  (_player?.avatarUrl == null ||
+                                      _player!.avatarUrl!.isEmpty))
+                              ? Text(
+                                  _player?.displayName
+                                          .substring(0, 1)
+                                          .toUpperCase() ??
+                                      'P',
+                                  style: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: _isLoading || _isUploadingAvatar
+                                    ? null
+                                    : _pickAvatar,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF4ECDC4),
+                                  foregroundColor: Colors.white,
+                                ),
+                                icon: const Icon(Icons.photo_library),
+                                label: Text(
+                                  _selectedAvatarBytes != null
+                                      ? 'Change Selected Image'
+                                      : 'Choose Image',
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              OutlinedButton.icon(
+                                onPressed:
+                                    _selectedAvatarBytes != null &&
+                                        !_isUploadingAvatar &&
+                                        !_isLoading
+                                    ? _uploadAvatar
+                                    : null,
+                                icon: _isUploadingAvatar
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Color(0xFF4ECDC4),
+                                              ),
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.cloud_upload,
+                                        color: Color(0xFF4ECDC4),
+                                      ),
+                                label: Text(
+                                  _isUploadingAvatar
+                                      ? 'Uploading...'
+                                      : 'Upload Avatar',
+                                  style: const TextStyle(
+                                    color: Color(0xFF4ECDC4),
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: Color(0xFF4ECDC4),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Accepted formats: PNG, JPG, JPEG, GIF, WebP • Max size 5MB.',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.6),
+                                  fontSize: 12,
+                                ),
+                              ),
+                              if (_selectedAvatarName != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Text(
+                                    _selectedAvatarName!,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_avatarError != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        _avatarError!,
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontSize: 12,
                         ),
                       ),
                     ],
-                  ),
-                ),
 
-              _buildSectionTitle('Avatar'),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Colors.white.withValues(alpha: 0.1),
-                    backgroundImage: _selectedAvatarBytes != null
-                        ? MemoryImage(_selectedAvatarBytes!)
-                        : (_player?.avatarUrl != null && _player!.avatarUrl!.isNotEmpty
-                            ? NetworkImage(_player!.avatarUrl!)
-                            : null),
-                    child: (_selectedAvatarBytes == null &&
-                            (_player?.avatarUrl == null || _player!.avatarUrl!.isEmpty))
-                        ? Text(
-                            _player?.displayName
-                                    .substring(0, 1)
-                                    .toUpperCase() ??
-                                'P',
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          )
-                        : null,
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: _isLoading || _isUploadingAvatar ? null : _pickAvatar,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4ECDC4),
-                            foregroundColor: Colors.white,
-                          ),
-                          icon: const Icon(Icons.photo_library),
-                          label: Text(
-                            _selectedAvatarBytes != null
-                                ? 'Change Selected Image'
-                                : 'Choose Image',
+                    const SizedBox(height: 24),
+
+                    // Bio Field
+                    _buildSectionTitle('Bio'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _bioController,
+                      maxLines: 3,
+                      maxLength: 500,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Tell us about yourself...',
+                        hintStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.05),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        OutlinedButton.icon(
-                          onPressed: _selectedAvatarBytes != null &&
-                                  !_isUploadingAvatar &&
-                                  !_isLoading
-                              ? _uploadAvatar
-                              : null,
-                          icon: _isUploadingAvatar
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF4ECDC4),
+                          ),
+                        ),
+                        errorText: _getFieldError('bio'),
+                        counterStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Favorite Otter Fact Field
+                    _buildSectionTitle('Favorite Otter Fact'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _favoriteOtterFactController,
+                      maxLines: 2,
+                      maxLength: 200,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Share an interesting fact about otters...',
+                        hintStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.05),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF4ECDC4),
+                          ),
+                        ),
+                        errorText: _getFieldError('favorite_otter_fact'),
+                        counterStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Title Field
+                    _buildSectionTitle('Title'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _titleController,
+                      maxLength: 50,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'e.g., "Otter Enthusiast", "River Explorer"',
+                        hintStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.05),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF4ECDC4),
+                          ),
+                        ),
+                        errorText: _getFieldError('title'),
+                        counterStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Location Field
+                    _buildSectionTitle('Location'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _locationController,
+                      maxLength: 100,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'e.g., "Seattle, WA", "Portland, OR"',
+                        hintStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.05),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF4ECDC4),
+                          ),
+                        ),
+                        errorText: _getFieldError('location'),
+                        counterStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Profile Banner URL Field
+                    _buildSectionTitle('Profile Banner URL'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _profileBannerUrlController,
+                      maxLength: 500,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'https://example.com/banner.jpg',
+                        hintStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.05),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF4ECDC4),
+                          ),
+                        ),
+                        errorText: _getFieldError('profile_banner_url'),
+                        counterStyle: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          final uri = Uri.tryParse(value);
+                          if (uri == null || !uri.hasAbsolutePath) {
+                            return 'Please enter a valid URL';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Save Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _saveProfile,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF4ECDC4),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
                                   ),
-                                )
-                              : const Icon(Icons.cloud_upload, color: Color(0xFF4ECDC4)),
-                          label: Text(
-                            _isUploadingAvatar ? 'Uploading...' : 'Upload Avatar',
-                            style: const TextStyle(color: Color(0xFF4ECDC4)),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF4ECDC4)),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Accepted formats: PNG, JPG, JPEG, GIF, WebP • Max size 5MB.',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.6),
-                            fontSize: 12,
-                          ),
-                        ),
-                        if (_selectedAvatarName != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Text(
-                              _selectedAvatarName!,
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Save Profile',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                          ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              if (_avatarError != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  _avatarError!,
-                  style: const TextStyle(color: Colors.redAccent, fontSize: 12),
-                ),
-              ],
 
-              const SizedBox(height: 24),
-
-              // Bio Field
-              _buildSectionTitle('Bio'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _bioController,
-                maxLines: 3,
-                maxLength: 500,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Tell us about yourself...',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                  filled: true,
-                  fillColor: Colors.white.withValues(alpha: 0.05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF4ECDC4)),
-                  ),
-                  errorText: _getFieldError('bio'),
-                  counterStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                    const SizedBox(height: 24),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 24),
-
-              // Favorite Otter Fact Field
-              _buildSectionTitle('Favorite Otter Fact'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _favoriteOtterFactController,
-                maxLines: 2,
-                maxLength: 200,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Share an interesting fact about otters...',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                  filled: true,
-                  fillColor: Colors.white.withValues(alpha: 0.05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF4ECDC4)),
-                  ),
-                  errorText: _getFieldError('favorite_otter_fact'),
-                  counterStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Title Field
-              _buildSectionTitle('Title'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _titleController,
-                maxLength: 50,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'e.g., "Otter Enthusiast", "River Explorer"',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                  filled: true,
-                  fillColor: Colors.white.withValues(alpha: 0.05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF4ECDC4)),
-                  ),
-                  errorText: _getFieldError('title'),
-                  counterStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Location Field
-              _buildSectionTitle('Location'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _locationController,
-                maxLength: 100,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'e.g., "Seattle, WA", "Portland, OR"',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                  filled: true,
-                  fillColor: Colors.white.withValues(alpha: 0.05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF4ECDC4)),
-                  ),
-                  errorText: _getFieldError('location'),
-                  counterStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Profile Banner URL Field
-              _buildSectionTitle('Profile Banner URL'),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _profileBannerUrlController,
-                maxLength: 500,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'https://example.com/banner.jpg',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                  filled: true,
-                  fillColor: Colors.white.withValues(alpha: 0.05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFF4ECDC4)),
-                  ),
-                  errorText: _getFieldError('profile_banner_url'),
-                  counterStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-                ),
-                validator: (value) {
-                  if (value != null && value.isNotEmpty) {
-                    final uri = Uri.tryParse(value);
-                    if (uri == null || !uri.hasAbsolutePath) {
-                      return 'Please enter a valid URL';
-                    }
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 32),
-
-              // Save Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveProfile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4ECDC4),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          'Save Profile',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 

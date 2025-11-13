@@ -14,19 +14,19 @@ class RiverBg extends RectangleComponent with HasGameReference {
   @override
   Future<void> onLoad() async {
     _tileHeight = size.y;
-    
+
     _tile1 = RectangleComponent(
       size: Vector2(size.x, _tileHeight),
       position: Vector2.zero(),
       paint: Paint()..color = Colors.cyan,
     );
-    
+
     _tile2 = RectangleComponent(
       size: Vector2(size.x, _tileHeight),
       position: Vector2(0, -_tileHeight),
       paint: Paint()..color = Colors.cyan,
     );
-    
+
     add(_tile1);
     add(_tile2);
   }
@@ -38,16 +38,16 @@ class RiverBg extends RectangleComponent with HasGameReference {
   @override
   void update(double dt) {
     super.update(dt);
-    
+
     // Move tiles down
     _tile1.position.y += _scrollSpeed * dt;
     _tile2.position.y += _scrollSpeed * dt;
-    
+
     // Wrap tiles when they go off screen
     if (_tile1.position.y > _tileHeight) {
       _tile1.position.y = _tile2.position.y - _tileHeight;
     }
-    
+
     if (_tile2.position.y > _tileHeight) {
       _tile2.position.y = _tile1.position.y - _tileHeight;
     }

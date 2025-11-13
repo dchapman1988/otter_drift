@@ -8,9 +8,7 @@ import 'retry_service.dart';
 class AuthService {
   static const String _tokenKey = 'jwt_token';
   static const FlutterSecureStorage _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock_this_device,
     ),
@@ -26,14 +24,16 @@ class AuthService {
         SecureLogger.logDebug('No token found - user not authenticated');
         return false;
       }
-      
+
       // Check if token is expired
       if (JwtDecoder.isExpired(token)) {
-        SecureLogger.logAuth('Token expired - clearing and marking as unauthenticated');
+        SecureLogger.logAuth(
+          'Token expired - clearing and marking as unauthenticated',
+        );
         await clearToken();
         return false;
       }
-      
+
       SecureLogger.logDebug('User is authenticated with valid token');
       return true;
     } catch (e) {
@@ -62,7 +62,7 @@ class AuthService {
         // Token is expired, remove it
         await clearToken();
       }
-      
+
       return null;
     } catch (e, stackTrace) {
       SecureLogger.logError(
@@ -78,17 +78,19 @@ class AuthService {
   static Future<bool> authenticate() async {
     try {
       SecureLogger.logAuth('Starting authentication process');
-      
+
       // Validate configuration before attempting authentication
       SecurityConfig.validateConfiguration();
-      
+
       final timeoutConfig = SecurityConfig.getTimeoutConfig();
-      final dio = Dio(BaseOptions(
-        baseUrl: SecurityConfig.getBaseUrl(),
-        connectTimeout: timeoutConfig.connectTimeout,
-        receiveTimeout: timeoutConfig.receiveTimeout,
-        sendTimeout: timeoutConfig.sendTimeout,
-      ));
+      final dio = Dio(
+        BaseOptions(
+          baseUrl: SecurityConfig.getBaseUrl(),
+          connectTimeout: timeoutConfig.connectTimeout,
+          receiveTimeout: timeoutConfig.receiveTimeout,
+          sendTimeout: timeoutConfig.sendTimeout,
+        ),
+      );
 
       final authData = {
         'client_id': SecurityConfig.getClientId(),
@@ -102,28 +104,38 @@ class AuthService {
         operationName: 'authentication',
       );
 
-      SecureLogger.logResponse(response.statusCode ?? 0, '/api/v1/auth/login', body: response.data);
+      SecureLogger.logResponse(
+        response.statusCode ?? 0,
+        '/api/v1/auth/login',
+        body: response.data,
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final token = response.data['token'] as String?;
         if (token != null && token.isNotEmpty) {
           await _storage.write(key: _tokenKey, value: token);
           _cachedToken = token;
-          
-          SecureLogger.logAuth('Authentication successful', data: {
-            'tokenLength': token.length,
-            'tokenExpiration': await getTokenExpiration(),
-          });
-          
+
+          SecureLogger.logAuth(
+            'Authentication successful',
+            data: {
+              'tokenLength': token.length,
+              'tokenExpiration': await getTokenExpiration(),
+            },
+          );
+
           return true;
         }
       }
-      
-      SecureLogger.logAuth('Authentication failed: Invalid response', data: {
-        'statusCode': response.statusCode,
-        'responseData': response.data,
-      });
-      
+
+      SecureLogger.logAuth(
+        'Authentication failed: Invalid response',
+        data: {
+          'statusCode': response.statusCode,
+          'responseData': response.data,
+        },
+      );
+
       return false;
     } catch (e) {
       SecureLogger.logError('Authentication failed', error: e);
@@ -154,7 +166,7 @@ class AuthService {
     try {
       final token = await getToken();
       if (token == null) return null;
-      
+
       final decodedToken = JwtDecoder.decode(token);
       final exp = decodedToken['exp'] as int?;
       if (exp != null) {
@@ -172,11 +184,13 @@ class AuthService {
   }
 
   /// Check if token will expire within the specified duration
-  static Future<bool> isTokenExpiringSoon({Duration threshold = const Duration(minutes: 5)}) async {
+  static Future<bool> isTokenExpiringSoon({
+    Duration threshold = const Duration(minutes: 5),
+  }) async {
     try {
       final expiration = await getTokenExpiration();
       if (expiration == null) return true;
-      
+
       final now = DateTime.now();
       return expiration.isBefore(now.add(threshold));
     } catch (e, stackTrace) {
@@ -194,7 +208,7 @@ class AuthService {
     try {
       final token = await getToken();
       if (token == null) return null;
-      
+
       return JwtDecoder.decode(token);
     } catch (e, stackTrace) {
       SecureLogger.logError(

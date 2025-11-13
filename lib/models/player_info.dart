@@ -2,25 +2,22 @@ class PlayerInfo {
   final String username;
   final String? avatarUrl;
 
-  const PlayerInfo({
-    required this.username,
-    this.avatarUrl,
-  });
+  const PlayerInfo({required this.username, this.avatarUrl});
 
   factory PlayerInfo.fromJson(Map<String, dynamic> json) {
     final avatarData = json['avatar'];
     return PlayerInfo(
       username: json['username'] as String,
-      avatarUrl: json['avatar_url'] as String? ??
-          (avatarData is Map<String, dynamic> ? avatarData['url'] as String? : null),
+      avatarUrl:
+          json['avatar_url'] as String? ??
+          (avatarData is Map<String, dynamic>
+              ? avatarData['url'] as String?
+              : null),
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'username': username,
-      'avatar_url': avatarUrl,
-    };
+    return {'username': username, 'avatar_url': avatarUrl};
   }
 
   @override
@@ -41,4 +38,3 @@ class PlayerInfo {
     return username.hashCode ^ avatarUrl.hashCode;
   }
 }
-

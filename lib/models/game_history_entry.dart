@@ -36,21 +36,30 @@ class GameHistoryEntry {
       endedAt: DateTime.parse(json['ended_at'] as String),
       gameDuration: (json['game_duration'] as num).toDouble(),
       liliesCollected: json['stats'] != null
-          ? (json['stats'] as Map<String, dynamic>)['lilies_collected'] as int? ?? 0
+          ? (json['stats'] as Map<String, dynamic>)['lilies_collected']
+                    as int? ??
+                0
           : 0,
       obstaclesAvoided: json['stats'] != null
-          ? (json['stats'] as Map<String, dynamic>)['obstacles_avoided'] as int? ?? 0
+          ? (json['stats'] as Map<String, dynamic>)['obstacles_avoided']
+                    as int? ??
+                0
           : 0,
       heartsCollected: json['stats'] != null
-          ? (json['stats'] as Map<String, dynamic>)['hearts_collected'] as int? ?? 0
+          ? (json['stats'] as Map<String, dynamic>)['hearts_collected']
+                    as int? ??
+                0
           : 0,
       maxSpeedReached: json['stats'] != null
-          ? ((json['stats'] as Map<String, dynamic>)['max_speed_reached'] as num?)?.toDouble() ?? 0.0
+          ? ((json['stats'] as Map<String, dynamic>)['max_speed_reached']
+                        as num?)
+                    ?.toDouble() ??
+                0.0
           : 0.0,
       highScores: json['high_scores'] != null
           ? (json['high_scores'] as List<dynamic>)
-              .map((item) => item as Map<String, dynamic>)
-              .toList()
+                .map((item) => item as Map<String, dynamic>)
+                .toList()
           : null,
       achievementsEarned: json['achievements_earned'] as int? ?? 0,
     );
@@ -80,4 +89,3 @@ class GameHistoryEntry {
     return 'GameHistoryEntry(sessionId: $sessionId, finalScore: $finalScore, seed: $seed)';
   }
 }
-

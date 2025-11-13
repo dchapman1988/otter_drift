@@ -33,10 +33,7 @@ class _GameScreenState extends State<GameScreen> {
   @override
   void initState() {
     super.initState();
-    _game = OtterGame(
-      player: widget.player,
-      isGuestMode: widget.isGuestMode,
-    );
+    _game = OtterGame(player: widget.player, isGuestMode: widget.isGuestMode);
   }
 
   void _showProfile(BuildContext context) {
@@ -46,10 +43,8 @@ class _GameScreenState extends State<GameScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ProfileScreen(
-            player: widget.player!,
-            onLogout: widget.onLogout,
-          ),
+          builder: (context) =>
+              ProfileScreen(player: widget.player!, onLogout: widget.onLogout),
         ),
       ).then((_) {
         // Resume game when returning from profile
@@ -179,7 +174,9 @@ class _GameScreenState extends State<GameScreen> {
 
                 // Player indicator
                 GestureDetector(
-                  onTap: !widget.isGuestMode ? () => _showProfile(context) : null,
+                  onTap: !widget.isGuestMode
+                      ? () => _showProfile(context)
+                      : null,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -199,7 +196,9 @@ class _GameScreenState extends State<GameScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          widget.isGuestMode ? Icons.person_outline : Icons.person,
+                          widget.isGuestMode
+                              ? Icons.person_outline
+                              : Icons.person,
                           color: widget.isGuestMode
                               ? Colors.orange
                               : const Color(0xFF4ECDC4),
@@ -230,4 +229,3 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 }
-

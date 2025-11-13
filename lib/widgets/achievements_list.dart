@@ -6,10 +6,7 @@ import '../services/player_api_service.dart';
 class AchievementsList extends StatefulWidget {
   final String username;
 
-  const AchievementsList({
-    super.key,
-    required this.username,
-  });
+  const AchievementsList({super.key, required this.username});
 
   @override
   State<AchievementsList> createState() => _AchievementsListState();
@@ -76,18 +73,11 @@ class _AchievementsListState extends State<AchievementsList> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline,
-                color: Colors.red[300],
-                size: 48,
-              ),
+              Icon(Icons.error_outline, color: Colors.red[300], size: 48),
               const SizedBox(height: 16),
               Text(
                 _errorMessage!,
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 16),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -130,10 +120,7 @@ class _AchievementsListState extends State<AchievementsList> {
               const SizedBox(height: 8),
               Text(
                 'Keep playing to unlock achievements!',
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.white54, fontSize: 14),
               ),
             ],
           ),
@@ -344,4 +331,3 @@ class _AchievementsListState extends State<AchievementsList> {
     }
   }
 }
-

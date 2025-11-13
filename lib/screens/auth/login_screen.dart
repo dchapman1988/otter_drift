@@ -126,10 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Text(
                   'Sign in to your account',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white70,
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.white70),
                 ),
                 const SizedBox(height: 48),
 
@@ -139,7 +136,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email, color: Color(0xFF66A0C8)),
+                    prefixIcon: const Icon(
+                      Icons.email,
+                      color: Color(0xFF66A0C8),
+                    ),
                     filled: true,
                     fillColor: Colors.white,
                     border: OutlineInputBorder(
@@ -147,7 +147,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF4ECDC4), width: 2),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF4ECDC4),
+                        width: 2,
+                      ),
                     ),
                   ),
                   validator: (value) {
@@ -155,7 +158,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       return 'Please enter your email';
                     }
                     // More permissive email regex that handles numbers and special characters
-                    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
+                    if (!RegExp(
+                      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                    ).hasMatch(value)) {
                       return 'Please enter a valid email';
                     }
                     return null;
@@ -169,10 +174,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText: _obscurePassword,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock, color: Color(0xFF66A0C8)),
+                    prefixIcon: const Icon(
+                      Icons.lock,
+                      color: Color(0xFF66A0C8),
+                    ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                         color: const Color(0xFF66A0C8),
                       ),
                       onPressed: () {
@@ -188,7 +198,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF4ECDC4), width: 2),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF4ECDC4),
+                        width: 2,
+                      ),
                     ),
                   ),
                   validator: (value) {
@@ -211,7 +224,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: BoxDecoration(
                       color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: Colors.red.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Text(
                       _errorMessage!,
@@ -238,7 +253,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         )
                       : const Text(
@@ -264,10 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: const Text(
                     'Play as Guest',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -300,4 +314,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

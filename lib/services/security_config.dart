@@ -5,13 +5,14 @@ import 'dart:io';
 class SecurityConfig {
   static const String _defaultClientId = 'game_client_1';
   static const int _expectedApiKeyLength = 64; // 64-character hex string
-  
+
   // Build-time configuration
   static const String _envApiKey = String.fromEnvironment('API_KEY');
   static const String _envClientId = String.fromEnvironment('CLIENT_ID');
   static const String _envBaseUrl = String.fromEnvironment('API_BASE');
-  static const bool _isDebugMode = bool.fromEnvironment('dart.vm.product') == false;
-  
+  static const bool _isDebugMode =
+      bool.fromEnvironment('dart.vm.product') == false;
+
   // Certificate pins for different environments
   static const Map<String, List<String>> _certificatePins = {
     'localhost:3000': [
@@ -28,7 +29,9 @@ class SecurityConfig {
   /// Get the client ID with validation
   static String getClientId() {
     final trimmedClientId = _envClientId.trim();
-    final clientId = trimmedClientId.isNotEmpty ? trimmedClientId : _defaultClientId;
+    final clientId = trimmedClientId.isNotEmpty
+        ? trimmedClientId
+        : _defaultClientId;
     _validateClientId(clientId);
     return clientId;
   }
@@ -39,10 +42,10 @@ class SecurityConfig {
     if (apiKey.isEmpty) {
       throw SecurityException(
         'API_KEY environment variable is required. '
-        'Use --dart-define=API_KEY=your_api_key_here when building.'
+        'Use --dart-define=API_KEY=your_api_key_here when building.',
       );
     }
-    
+
     _validateApiKey(apiKey);
     return apiKey;
   }
@@ -53,7 +56,7 @@ class SecurityConfig {
     if (baseUrl.isNotEmpty) {
       return baseUrl;
     }
-    
+
     if (Platform.isAndroid) {
       return 'http://10.0.2.2:3000';
     }
@@ -73,14 +76,16 @@ class SecurityConfig {
     if (clientId.isEmpty) {
       throw SecurityException('Client ID cannot be empty');
     }
-    
+
     if (clientId.length < 3) {
       throw SecurityException('Client ID must be at least 3 characters long');
     }
-    
+
     // Allow alphanumeric, underscore, and hyphen
     if (!RegExp(r'^[a-zA-Z0-9_-]+$').hasMatch(clientId)) {
-      throw SecurityException('Client ID can only contain alphanumeric characters, underscores, and hyphens');
+      throw SecurityException(
+        'Client ID can only contain alphanumeric characters, underscores, and hyphens',
+      );
     }
   }
 
@@ -89,14 +94,14 @@ class SecurityConfig {
     if (apiKey.isEmpty) {
       throw SecurityException('API key cannot be empty');
     }
-    
+
     if (apiKey.length != _expectedApiKeyLength) {
       throw SecurityException(
         'API key must be exactly $_expectedApiKeyLength characters long. '
-        'Received: ${apiKey.length} characters'
+        'Received: ${apiKey.length} characters',
       );
     }
-    
+
     // Validate hex format
     if (!RegExp(r'^[a-fA-F0-9]+$').hasMatch(apiKey)) {
       throw SecurityException('API key must be a valid hexadecimal string');
@@ -135,7 +140,7 @@ class SecurityConfig {
       getClientId();
       getApiKey();
       getBaseUrl();
-      
+
       if (isDebugMode()) {
         developer.log(
           'Configuration validated successfully',
@@ -211,9 +216,9 @@ class TimeoutConfig {
 /// Security exception for configuration errors
 class SecurityException implements Exception {
   final String message;
-  
+
   const SecurityException(this.message);
-  
+
   @override
   String toString() => 'SecurityException: $message';
 }

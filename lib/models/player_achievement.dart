@@ -68,4 +68,3 @@ class PlayerAchievement {
         collectedAt.hashCode;
   }
 }
-

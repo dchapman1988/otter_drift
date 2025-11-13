@@ -107,11 +107,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo/Title
-                  const Icon(
-                    Icons.pets,
-                    size: 80,
-                    color: Color(0xFF4ECDC4),
-                  ),
+                  const Icon(Icons.pets, size: 80, color: Color(0xFF4ECDC4)),
                   const SizedBox(height: 16),
                   const Text(
                     'Create Account',
@@ -126,10 +122,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   const Text(
                     'Join the Otter Drift community',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.white70),
                   ),
                   const SizedBox(height: 48),
 
@@ -139,7 +132,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       labelText: 'Email',
-                      prefixIcon: const Icon(Icons.email, color: Color(0xFF4ECDC4)),
+                      prefixIcon: const Icon(
+                        Icons.email,
+                        color: Color(0xFF4ECDC4),
+                      ),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -147,7 +143,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF4ECDC4), width: 2),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF4ECDC4),
+                          width: 2,
+                        ),
                       ),
                       errorText: _getFieldError('email'),
                     ),
@@ -156,7 +155,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         return 'Please enter your email';
                       }
                       // More permissive email regex that handles numbers and special characters
-                      if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(value)) {
+                      if (!RegExp(
+                        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+                      ).hasMatch(value)) {
                         return 'Please enter a valid email';
                       }
                       return null;
@@ -169,7 +170,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     controller: _usernameController,
                     decoration: InputDecoration(
                       labelText: 'Username',
-                      prefixIcon: const Icon(Icons.person, color: Color(0xFF4ECDC4)),
+                      prefixIcon: const Icon(
+                        Icons.person,
+                        color: Color(0xFF4ECDC4),
+                      ),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -177,7 +181,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF4ECDC4), width: 2),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF4ECDC4),
+                          width: 2,
+                        ),
                       ),
                       errorText: _getFieldError('username'),
                     ),
@@ -202,10 +209,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock, color: Color(0xFF4ECDC4)),
+                      prefixIcon: const Icon(
+                        Icons.lock,
+                        color: Color(0xFF4ECDC4),
+                      ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                          _obscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
                           color: const Color(0xFF4ECDC4),
                         ),
                         onPressed: () {
@@ -221,7 +233,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF4ECDC4), width: 2),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF4ECDC4),
+                          width: 2,
+                        ),
                       ),
                       errorText: _getFieldError('password'),
                     ),
@@ -243,10 +258,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     obscureText: _obscureConfirmPassword,
                     decoration: InputDecoration(
                       labelText: 'Confirm Password',
-                      prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF4ECDC4)),
+                      prefixIcon: const Icon(
+                        Icons.lock_outline,
+                        color: Color(0xFF4ECDC4),
+                      ),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscureConfirmPassword ? Icons.visibility : Icons.visibility_off,
+                          _obscureConfirmPassword
+                              ? Icons.visibility
+                              : Icons.visibility_off,
                           color: const Color(0xFF4ECDC4),
                         ),
                         onPressed: () {
@@ -262,7 +282,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Color(0xFF4ECDC4), width: 2),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF4ECDC4),
+                          width: 2,
+                        ),
                       ),
                       errorText: _getFieldError('password_confirmation'),
                     ),
@@ -286,7 +309,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       decoration: BoxDecoration(
                         color: Colors.red.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: Colors.red.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Text(
                         _errorMessage!,
@@ -313,7 +338,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : const Text(
@@ -356,7 +383,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         style: TextStyle(color: Colors.white70),
                       ),
                       TextButton(
-                        onPressed: _isLoading ? null : () => Navigator.pop(context),
+                        onPressed: _isLoading
+                            ? null
+                            : () => Navigator.pop(context),
                         child: const Text(
                           'Sign In',
                           style: TextStyle(

@@ -10,7 +10,11 @@ class ProfileScreen extends StatefulWidget {
   final Player player;
   final VoidCallback onLogout;
 
-  const ProfileScreen({super.key, required this.player, required this.onLogout});
+  const ProfileScreen({
+    super.key,
+    required this.player,
+    required this.onLogout,
+  });
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -213,7 +217,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           backgroundImage: _currentPlayer?.avatarUrl != null
                               ? NetworkImage(_currentPlayer!.avatarUrl!)
                               : null,
-                          child: (_currentPlayer?.avatarUrl == null ||
+                          child:
+                              (_currentPlayer?.avatarUrl == null ||
                                   _currentPlayer!.avatarUrl!.isEmpty)
                               ? Text(
                                   _currentPlayer?.displayName

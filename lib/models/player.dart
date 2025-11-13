@@ -43,12 +43,13 @@ class Player {
       id: json['id'] as int,
       email: json['email'] as String,
       username: json['username'] as String,
-      displayName: json['display_name'] as String? ?? json['username'] as String,
+      displayName:
+          json['display_name'] as String? ?? json['username'] as String,
       totalScore: json['total_score'] as int? ?? 0,
       gamesPlayed: json['games_played'] as int? ?? 0,
       avatarUrl: resolvedAvatarUrl,
-      profile: json['profile'] is Map<String, dynamic> 
-          ? PlayerProfile.fromJson(json['profile'] as Map<String, dynamic>) 
+      profile: json['profile'] is Map<String, dynamic>
+          ? PlayerProfile.fromJson(json['profile'] as Map<String, dynamic>)
           : null,
     );
   }
@@ -119,4 +120,3 @@ class Player {
         profile.hashCode;
   }
 }
-
