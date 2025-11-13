@@ -185,10 +185,13 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     // Check for collisions between otter and logs
     for (final log in children.whereType<Log>()) {
       if (_otter.toRect().overlaps(log.toRect())) {
-        if (!_otter.isInvulnerable()) {
+        // Only damage if otter is not invulnerable AND this log hasn't hit yet
+        if (!_otter.isInvulnerable() && !log.hasHitOtter) {
           FlameAudio.play('log_collision.wav');
           takeDamage();
           _otter.takeDamage();
+          // Mark this log as having hit the otter to prevent multiple damage
+          log.markAsHit();
         }
       }
     }

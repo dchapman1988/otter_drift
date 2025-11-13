@@ -58,6 +58,12 @@ class Log extends SpriteAnimationComponent
     onAvoided = callback;
   }
 
+  bool get hasHitOtter => _hasHitOtter;
+
+  void markAsHit() {
+    _hasHitOtter = true;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
