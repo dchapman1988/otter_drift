@@ -42,9 +42,33 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   int heartsCollected = 0;
   bool _hasSubmittedScore = false;
   bool _isSavingScore = false;
+  bool _isPaused = false;
   StreamSubscription<GameSessionSyncEvent>? _syncSubscription;
 
   OtterGame({this.player, this.isGuestMode = false});
+
+  /// Returns whether the game is currently paused
+  bool get isPaused => _isPaused;
+
+  /// Pauses the game engine, audio, and game logic
+  void pauseGame() {
+    if (_isPaused) return;
+
+    _isPaused = true;
+    pauseEngine();
+    // Pause background music when game is paused
+    FlameAudio.bgm.pause();
+  }
+
+  /// Resumes the game engine, audio, and game logic
+  void resumeGame() {
+    if (!_isPaused) return;
+
+    _isPaused = false;
+    resumeEngine();
+    // Resume background music when game resumes
+    FlameAudio.bgm.resume();
+  }
 
   @override
   Future<void> onLoad() async {
@@ -145,6 +169,11 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   @override
   void update(double dt) {
     super.update(dt);
+
+    // Don't update game logic if paused
+    if (_isPaused) {
+      return;
+    }
 
     // Clamp dt to prevent physics spikes
     dt = dt.clamp(0.0, 1.0 / 30.0);
@@ -302,6 +331,10 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     heartsCollected = 0;
     _hasSubmittedScore = false;
     _isSavingScore = false;
+    // Ensure game is not paused when restarting
+    if (_isPaused) {
+      resumeGame();
+    }
 
     // New seed for new game
     seed = DateTime.now().millisecondsSinceEpoch;
