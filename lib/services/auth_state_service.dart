@@ -9,8 +9,10 @@ class AuthStateService {
   factory AuthStateService() => _instance;
   AuthStateService._internal();
 
-  final StreamController<AuthState> _authStateController = StreamController<AuthState>.broadcast();
-  final StreamController<Player?> _playerController = StreamController<Player?>.broadcast();
+  final StreamController<AuthState> _authStateController =
+      StreamController<AuthState>.broadcast();
+  final StreamController<Player?> _playerController =
+      StreamController<Player?>.broadcast();
 
   Stream<AuthState> get authStateStream => _authStateController.stream;
   Stream<Player?> get playerStream => _playerController.stream;
@@ -29,28 +31,41 @@ class AuthStateService {
   /// Check current authentication state
   Future<void> _checkAuthState() async {
     try {
-      SecureLogger.logDebug('AuthStateService: Checking authentication state...');
+      SecureLogger.logDebug(
+        'AuthStateService: Checking authentication state...',
+      );
       final isAuthenticated = await PlayerAuthService.isAuthenticated();
-      SecureLogger.logDebug('AuthStateService: isAuthenticated = $isAuthenticated');
-      
+      SecureLogger.logDebug(
+        'AuthStateService: isAuthenticated = $isAuthenticated',
+      );
+
       if (isAuthenticated) {
         final player = await PlayerAuthService.getCurrentPlayer();
-        SecureLogger.logDebug('AuthStateService: Got player: ${player?.username}');
+        SecureLogger.logDebug(
+          'AuthStateService: Got player: ${player?.username}',
+        );
         _updateState(AuthState.authenticated, player);
         await _refreshPlayerFromApi();
       } else {
-        SecureLogger.logDebug('AuthStateService: Setting state to unauthenticated');
+        SecureLogger.logDebug(
+          'AuthStateService: Setting state to unauthenticated',
+        );
         _updateState(AuthState.unauthenticated, null);
       }
     } catch (e) {
-      SecureLogger.logError('AuthStateService: Error checking auth state', error: e);
+      SecureLogger.logError(
+        'AuthStateService: Error checking auth state',
+        error: e,
+      );
       _updateState(AuthState.unauthenticated, null);
     }
   }
 
   /// Update authentication state
   void _updateState(AuthState state, Player? player) {
-    SecureLogger.logDebug('AuthStateService: Updating state to $state with player: ${player?.username ?? "null"}');
+    SecureLogger.logDebug(
+      'AuthStateService: Updating state to $state with player: ${player?.username ?? "null"}',
+    );
     _currentState = state;
     _currentPlayer = player;
     _authStateController.add(state);
@@ -59,11 +74,17 @@ class AuthStateService {
 
   /// Handle successful login/signup
   void onAuthSuccess(Player player) {
-    SecureLogger.logDebug('AuthStateService: onAuthSuccess called with player: ${player.username}');
-    SecureLogger.logDebug('AuthStateService: Current state before update: $_currentState');
+    SecureLogger.logDebug(
+      'AuthStateService: onAuthSuccess called with player: ${player.username}',
+    );
+    SecureLogger.logDebug(
+      'AuthStateService: Current state before update: $_currentState',
+    );
     _updateState(AuthState.authenticated, player);
     SecureLogger.logDebug('AuthStateService: State updated to: $_currentState');
-    SecureLogger.logDebug('AuthStateService: Current player set to: ${_currentPlayer?.username}');
+    SecureLogger.logDebug(
+      'AuthStateService: Current player set to: ${_currentPlayer?.username}',
+    );
     unawaited(_refreshPlayerFromApi());
   }
 
@@ -84,6 +105,17 @@ class AuthStateService {
       final player = await PlayerAuthService.getCurrentPlayer();
       _updateState(AuthState.authenticated, player);
       await _refreshPlayerFromApi();
+    }
+  }
+
+  /// Update player from storage (without fetching from API)
+  /// Useful when player data has been updated locally (e.g., stats)
+  Future<void> updatePlayerFromStorage() async {
+    if (_currentState == AuthState.authenticated) {
+      final player = await PlayerAuthService.getCurrentPlayer();
+      if (player != null) {
+        _updateState(AuthState.authenticated, player);
+      }
     }
   }
 
@@ -109,23 +141,48 @@ class AuthStateService {
 
     try {
       SecureLogger.logDebug('AuthStateService: Refreshing player from API');
+
+      // Preserve current stats in case API doesn't return them or returns zeros
+      final currentTotalScore = _currentPlayer?.totalScore ?? 0;
+      final currentGamesPlayed = _currentPlayer?.gamesPlayed ?? 0;
+
       final latestPlayer = await PlayerApiService.getPlayerProfile();
       if (latestPlayer != null) {
-        SecureLogger.logDebug('AuthStateService: Player refreshed from API: ${latestPlayer.username}');
-        _updateState(AuthState.authenticated, latestPlayer);
+        SecureLogger.logDebug(
+          'AuthStateService: Player refreshed from API: ${latestPlayer.username}',
+        );
+
+        // Merge stats: prefer API stats if non-zero, otherwise preserve current stats
+        // This prevents the profile API from overwriting valid stats with zeros
+        // (The profile API might not have the latest stats, so we preserve what we have)
+        final mergedPlayer = latestPlayer.copyWith(
+          totalScore: (latestPlayer.totalScore > 0)
+              ? latestPlayer.totalScore
+              : currentTotalScore,
+          gamesPlayed: (latestPlayer.gamesPlayed > 0)
+              ? latestPlayer.gamesPlayed
+              : currentGamesPlayed,
+        );
+
+        // Update stored player with merged data if stats were preserved
+        if (mergedPlayer.totalScore != latestPlayer.totalScore ||
+            mergedPlayer.gamesPlayed != latestPlayer.gamesPlayed) {
+          await PlayerAuthService.updateStoredPlayer(mergedPlayer);
+        }
+
+        _updateState(AuthState.authenticated, mergedPlayer);
       } else {
-        SecureLogger.logDebug('AuthStateService: Player refresh returned null, keeping existing data');
+        SecureLogger.logDebug(
+          'AuthStateService: Player refresh returned null, keeping existing data',
+        );
       }
     } catch (e) {
-      SecureLogger.logError('AuthStateService: Failed to refresh player from API', error: e);
+      SecureLogger.logError(
+        'AuthStateService: Failed to refresh player from API',
+        error: e,
+      );
     }
   }
 }
 
-enum AuthState {
-  unknown,
-  unauthenticated,
-  authenticated,
-  guest,
-}
-
+enum AuthState { unknown, unauthenticated, authenticated, guest }

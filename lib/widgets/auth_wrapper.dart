@@ -56,9 +56,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
         ),
       ),
     );
-    
+
     await _authStateService.onLogout();
-    
+
     // Close loading indicator
     if (mounted) {
       Navigator.of(context).pop();
@@ -152,13 +152,6 @@ class MainMenuWrapper extends StatelessWidget {
         final player = snapshot.data;
         final isGuest = authStateService.isGuestMode;
 
-        if (kDebugMode) {
-          debugPrint(
-            'MainMenuWrapper::state player=${player?.username ?? "null"} '
-            'isGuest=$isGuest hasData=${snapshot.hasData}',
-          );
-        }
-
         return MainMenuScreen(
           player: player,
           isGuestMode: isGuest,
@@ -189,10 +182,8 @@ class GameScreen extends StatelessWidget {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ProfileScreen(
-            player: player!,
-            onLogout: onLogout,
-          ),
+          builder: (context) =>
+              ProfileScreen(player: player!, onLogout: onLogout),
         ),
       );
     }
@@ -254,12 +245,10 @@ class GameScreen extends StatelessWidget {
         children: [
           // Game
           GameWidget<OtterGame>.controlled(
-            gameFactory: () => OtterGame(
-              player: player,
-              isGuestMode: isGuestMode,
-            ),
+            gameFactory: () =>
+                OtterGame(player: player, isGuestMode: isGuestMode),
           ),
-          
+
           // Top bar with player info and menu button
           Positioned(
             top: 40,
@@ -276,7 +265,9 @@ class GameScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: const Icon(
                       Icons.menu,
@@ -285,17 +276,22 @@ class GameScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 // Player indicator
                 GestureDetector(
                   onTap: !isGuestMode ? () => _showProfile(context) : null,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.7),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: isGuestMode ? Colors.orange : const Color(0xFF4ECDC4),
+                        color: isGuestMode
+                            ? Colors.orange
+                            : const Color(0xFF4ECDC4),
                         width: 1,
                       ),
                     ),
@@ -304,14 +300,20 @@ class GameScreen extends StatelessWidget {
                       children: [
                         Icon(
                           isGuestMode ? Icons.person_outline : Icons.person,
-                          color: isGuestMode ? Colors.orange : const Color(0xFF4ECDC4),
+                          color: isGuestMode
+                              ? Colors.orange
+                              : const Color(0xFF4ECDC4),
                           size: 16,
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          isGuestMode ? 'Guest' : (player?.displayName ?? 'Player'),
+                          isGuestMode
+                              ? 'Guest'
+                              : (player?.displayName ?? 'Player'),
                           style: TextStyle(
-                            color: isGuestMode ? Colors.orange : const Color(0xFF4ECDC4),
+                            color: isGuestMode
+                                ? Colors.orange
+                                : const Color(0xFF4ECDC4),
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
