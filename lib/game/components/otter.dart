@@ -11,9 +11,9 @@ class Otter extends SpriteAnimationComponent
   double _invulnerableUntil = 0;
   bool _isFlashing = false;
   double _flashDuration = 0;
-  
+
   Otter() : super(size: Vector2.all(64));
-  
+
   @override
   Future<void> onLoad() async {
     try {
@@ -42,39 +42,38 @@ class Otter extends SpriteAnimationComponent
         ),
       );
     }
-    
+
     // Position at 70% of screen height
     position = Vector2(game.size.x / 2, game.size.y * 0.7);
     _targetX = position.x;
-    
+
     // Add circular hitbox with radius = min(width, height) * 0.35
     final radius = (size.x < size.y ? size.x : size.y) * 0.35;
     _hitbox = CircleHitbox(radius: radius);
     add(_hitbox);
-    
+
     anchor = Anchor.center;
   }
-
 
   @override
   void update(double dt) {
     super.update(dt);
-    
+
     // Lerp towards target X position
     final dx = _targetX - position.x;
     final maxDx = _maxSpeed * dt;
-    
+
     if (dx.abs() <= maxDx) {
       position.x = _targetX;
     } else {
       position.x += dx.sign * maxDx;
     }
-    
+
     // Clamp to river banks (assuming river is full width with some margin)
     final margin = size.x * 0.5;
     position.x = position.x.clamp(margin, game.size.x - margin);
     _targetX = position.x;
-    
+
     // Handle invulnerability and flashing
     if (_invulnerableUntil > 0) {
       _invulnerableUntil -= dt;
@@ -83,7 +82,7 @@ class Otter extends SpriteAnimationComponent
         _isFlashing = false;
       }
     }
-    
+
     // Handle flash effect
     if (_isFlashing) {
       _flashDuration -= dt;
@@ -116,7 +115,7 @@ class Otter extends SpriteAnimationComponent
 
   void takeDamage() {
     if (isInvulnerable()) return;
-    
+
     _invulnerableUntil = 0.5; // 500ms invulnerability
     _isFlashing = true;
     _flashDuration = 0.25; // 250ms flash

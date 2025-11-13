@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
@@ -47,6 +48,16 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
 
   @override
   Future<void> onLoad() async {
+    await FlameAudio.audioCache.loadAll([
+      'log_collision.wav',
+      'lily_collect.wav',
+      'heart_collect.wav',
+      'background_music.wav',
+    ]);
+
+    // Start background music (loops automatically)
+    FlameAudio.bgm.play('background_music.wav', volume: 1.0);
+
     // Initialize seeded random
     seed = DateTime.now().millisecondsSinceEpoch;
     _rng = SeededRandom(seed: seed);
@@ -175,6 +186,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     for (final log in children.whereType<Log>()) {
       if (_otter.toRect().overlaps(log.toRect())) {
         if (!_otter.isInvulnerable()) {
+          FlameAudio.play('log_collision.wav');
           takeDamage();
           _otter.takeDamage();
         }
@@ -257,6 +269,9 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     // Stop background scrolling
     _riverBg.setScrollSpeed(0);
 
+    // Stop background music
+    FlameAudio.bgm.stop();
+
     // Hide all game sprites
     _otter.removeFromParent();
     children.whereType<Log>().forEach((log) => log.removeFromParent());
@@ -318,6 +333,9 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     // Reset otter position
     _otter.position = Vector2(size.x / 2, size.y * 0.7);
 
+    // Restart background music
+    FlameAudio.bgm.play('background_music.wav', volume: 1.0);
+
     // Schedule first spawn
     nextSpawnTime = _rng.nextPoissonSpawnTime(1.2);
   }
@@ -374,6 +392,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
 
   @override
   void onRemove() {
+    FlameAudio.bgm.stop();
     _syncSubscription?.cancel();
     super.onRemove();
   }
