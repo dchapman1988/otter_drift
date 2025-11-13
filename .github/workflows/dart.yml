@@ -21,10 +21,10 @@ jobs:
       # Setup Flutter SDK
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
+        id: flutter
         with:
-          channel: 'stable'
+          flutter-version: '3.38.0'  # Version suggested by error message (includes Dart 3.9.2)
           cache: true
-          flutter-version: '3.24.5'  # Explicit version for stability
 
       # Get Flutter dependencies
       - name: Install dependencies
