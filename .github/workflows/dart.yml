@@ -23,7 +23,7 @@ jobs:
         uses: subosito/flutter-action@v2
         id: flutter
         with:
-          flutter-version: '3.38.0'  # Version suggested by error message (includes Dart 3.9.2)
+          flutter-version: '3.38.0'  # Flutter 3.38 includes Dart 3.10.0
           cache: true
 
       # Get Flutter dependencies
