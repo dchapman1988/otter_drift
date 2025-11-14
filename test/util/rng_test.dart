@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_frontend/util/rng.dart';
-import 'dart:math';
 
 void main() {
   group('SeededRandom', () {
