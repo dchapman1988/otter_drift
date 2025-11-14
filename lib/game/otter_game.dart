@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame_audio/flame_audio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
@@ -25,6 +26,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
 
   final Player? player;
   final bool isGuestMode;
+  final VoidCallback? onExitToMenu;
 
   int hearts = 3;
   int score = 0;
@@ -44,7 +46,11 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   bool _isPaused = false;
   StreamSubscription<GameSessionSyncEvent>? _syncSubscription;
 
-  OtterGame({this.player, this.isGuestMode = false});
+  OtterGame({
+    this.player,
+    this.isGuestMode = false,
+    this.onExitToMenu,
+  });
 
   /// Returns whether the game is currently paused
   bool get isPaused => _isPaused;
@@ -99,6 +105,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     // Create HUD
     _hud = Hud();
     _hud.onPlayAgain = restart;
+    _hud.onMainMenu = () => onExitToMenu?.call();
     _hud.onQuit = quitGame;
     add(_hud);
 

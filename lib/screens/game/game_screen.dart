@@ -32,7 +32,11 @@ class _GameScreenState extends State<GameScreen> {
   @override
   void initState() {
     super.initState();
-    _game = OtterGame(player: widget.player, isGuestMode: widget.isGuestMode);
+    _game = OtterGame(
+      player: widget.player,
+      isGuestMode: widget.isGuestMode,
+      onExitToMenu: _returnToMainMenu,
+    );
   }
 
   void _showProfile(BuildContext context) {
@@ -70,6 +74,11 @@ class _GameScreenState extends State<GameScreen> {
         _isPaused = false;
       });
     }
+  }
+
+  void _returnToMainMenu() {
+    if (!mounted) return;
+    Navigator.of(context).pop();
   }
 
   void _showPauseMenu(BuildContext context) {

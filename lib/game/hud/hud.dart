@@ -20,6 +20,7 @@ class Hud extends Component with HasGameReference {
   bool _gameOver = false;
 
   Function()? onPlayAgain;
+  Function()? onMainMenu;
   Function()? onQuit;
 
   @override
@@ -189,20 +190,33 @@ class Hud extends Component with HasGameReference {
     final tapX = x;
     final tapY = y;
 
-    // Check if tap is on Play Again button
+    final buttonWidth = 200.0;
+    final buttonHeight = 44.0;
+    final centerX = game.size.x / 2 - buttonWidth / 2;
+    final firstButtonY = game.size.y / 2 + 40;
+
+    // Play again button
     final playAgainRect = Rect.fromLTWH(
-      game.size.x / 2 - 80,
-      game.size.y / 2 + 50,
-      160,
-      40,
+      centerX,
+      firstButtonY,
+      buttonWidth,
+      buttonHeight,
     );
 
-    // Check if tap is on Quit button
+    // Main menu button
+    final mainMenuRect = Rect.fromLTWH(
+      centerX,
+      firstButtonY + buttonHeight + 16,
+      buttonWidth,
+      buttonHeight,
+    );
+
+    // Quit game button
     final quitRect = Rect.fromLTWH(
-      game.size.x / 2 - 80,
-      game.size.y / 2 + 110,
-      160,
-      40,
+      centerX,
+      firstButtonY + (buttonHeight + 16) * 2,
+      buttonWidth,
+      buttonHeight,
     );
 
     if (kDebugMode) {
@@ -215,6 +229,12 @@ class Hud extends Component with HasGameReference {
         debugPrint('Hud::playAgain tapped');
       }
       onPlayAgain?.call();
+      return true;
+    } else if (mainMenuRect.contains(Offset(tapX, tapY))) {
+      if (kDebugMode) {
+        debugPrint('Hud::mainMenu tapped');
+      }
+      onMainMenu?.call();
       return true;
     } else if (quitRect.contains(Offset(tapX, tapY))) {
       if (kDebugMode) {
@@ -245,24 +265,41 @@ class Hud extends Component with HasGameReference {
             const Color(0xFF0EA5E9) // Nice blue
         ..style = PaintingStyle.fill;
 
+      final buttonWidth = 200.0;
+      final buttonHeight = 44.0;
+      final centerX = game.size.x / 2 - buttonWidth / 2;
+      final firstButtonY = game.size.y / 2 + 40;
+
       // Play Again button
       final playAgainRect = Rect.fromLTWH(
-        game.size.x / 2 - 80,
-        game.size.y / 2 + 50,
-        160,
-        40,
+        centerX,
+        firstButtonY,
+        buttonWidth,
+        buttonHeight,
       );
       canvas.drawRRect(
         RRect.fromRectAndRadius(playAgainRect, const Radius.circular(12)),
         buttonPaint,
       );
 
+      // Main Menu button
+      final mainMenuRect = Rect.fromLTWH(
+        centerX,
+        firstButtonY + buttonHeight + 16,
+        buttonWidth,
+        buttonHeight,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(mainMenuRect, const Radius.circular(12)),
+        buttonPaint,
+      );
+
       // Quit button
       final quitRect = Rect.fromLTWH(
-        game.size.x / 2 - 80,
-        game.size.y / 2 + 110,
-        160,
-        40,
+        centerX,
+        firstButtonY + (buttonHeight + 16) * 2,
+        buttonWidth,
+        buttonHeight,
       );
       canvas.drawRRect(
         RRect.fromRectAndRadius(quitRect, const Radius.circular(12)),
@@ -286,6 +323,23 @@ class Hud extends Component with HasGameReference {
         Offset(
           playAgainRect.center.dx - textPainter.width / 2,
           playAgainRect.center.dy - textPainter.height / 2,
+        ),
+      );
+
+      textPainter.text = const TextSpan(
+        text: 'Main Menu',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(
+          mainMenuRect.center.dx - textPainter.width / 2,
+          mainMenuRect.center.dy - textPainter.height / 2,
         ),
       );
 

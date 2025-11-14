@@ -1,90 +1,247 @@
-# Otter Drift
+# 🦦 Otter Drift
 
-Otter Drift is a Flutter + Flame arcade game where you guide an otter down river rapids while collecting items and dodging hazards. This repository contains the Flutter client and requires a Rails API backend for player authentication and leaderboard data.
+> An arcade-style Flutter + Flame game where you guide an otter down river rapids while collecting items and dodging hazards.
 
-Frontend repo: this project  
-Backend repo: [otter_drift_api](https://github.com/dchapman1988/otter_drift_api/)
+[![Flutter](https://img.shields.io/badge/Flutter-3.38-blue.svg)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.10-blue.svg)](https://dart.dev)
+[![Flame](https://img.shields.io/badge/Flame-1.33-orange.svg)](https://flame-engine.org)
+[![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Desktop-lightgrey.svg)](https://flutter.dev)
+[![CI](https://github.com/dchapman1988/otter_drift/workflows/Flutter%20CI/badge.svg)](.github/workflows/dart.yml)
 
-## Prerequisites
+## 📸 Screenshots
 
-- Flutter 3.22+ (check with `flutter --version`)
-- Dart SDK (bundled with Flutter)
-- Ruby on Rails backend running on <http://localhost:3000> *(or update the base URL via `--dart-define` flags – see below)*
+<img width="517" height="1029" alt="Gameplay Screenshot" src="https://github.com/user-attachments/assets/d5963007-d7a3-4d49-a3ea-5a607d8c15d7" />
+<img width="517" height="1029" alt="Menu Screenshot" src="https://github.com/user-attachments/assets/97459875-1033-43a5-ba9f-2a39a4bbdb34" />
+<img width="517" height="1029" alt="Gameplay 1" src="https://github.com/user-attachments/assets/c4e7c0d9-37d7-4e63-9063-a4fb821c0aef" />
+<img width="517" height="1029" alt="Gameplay 2" src="https://github.com/user-attachments/assets/6100a19c-c2b1-4e5a-9260-4f40f8f55e3a" />
+<img width="517" height="1029" alt="Gameplay 3" src="https://github.com/user-attachments/assets/20fe3029-e2b2-4e29-93a1-6977cf152271" />
+<img width="517" height="1029" alt="Gameplay 4" src="https://github.com/user-attachments/assets/56b1de6b-eeb0-49aa-a5ce-81e0cecbe7b6" />
 
-## Setup
+## ✨ Features
 
-```bash
-git clone <repository-url>
-cd otter_drift
-flutter pub get
-```
+- 🎮 **Smooth Gameplay** - Fast-paced river navigation with responsive tap controls
+- 🎯 **Score System** - Collect lilies and avoid logs to build your high score
+- ❤️  **Health Management** - Start with 3 hearts, collect power-ups to restore health
+- 📈 **Progressive Difficulty** - River speed increases over time for added challenge
+- 🏆 **Leaderboards** - Compete globally with authenticated players
+- 👤 **Player Profiles** - Track achievements, game history, and statistics
+- 🔐 **Secure Authentication** - JWT-based auth with certificate pinning support
+- 🎵 **Immersive Audio** - Background music and sound effects
+- 🎨 **Beautiful Graphics** - Animated sprites and smooth visuals
+- 🔄 **Guest Mode** - Play without an account (scores won't sync)
 
-Provide the API credentials at runtime. At minimum an `API_KEY` must be supplied (`CLIENT_ID` is optional and defaults to `game_client_1`):
+## 🎮 How to Play
 
-```bash
-flutter run \
-  --dart-define=API_KEY=your_64_char_hex_key \
-  --dart-define=CLIENT_ID=game_client_1 \
-  --dart-define=API_BASE=http://localhost:3000
-```
+### Objective
+Stay alive as long as possible while racking up the highest score!
 
-Building for release uses the same flags:
+### Controls
+- **Tap anywhere** on the screen to move the otter horizontally toward the tap position
 
-```bash
-flutter build apk --dart-define=API_KEY=prod_key_here
-```
+### Game Elements
+
+- **🪵 Logs** (60% spawn rate)
+  - Avoid these! Colliding with a log costs one heart
+  - Repeated collisions end your run
+
+- **🌸 Lilies** (25% spawn rate)
+  - Collect these for **10 points** each
+  - Focus on gathering as many as possible for a high score
+
+- **❤️ Hearts** (15% spawn rate)
+  - Restore one heart when collected (max 3 hearts)
+  - Essential for survival on longer runs
+
+### Difficulty Progression
+
+- **Starting Speed**: 120 px/s
+- **Speed Increase**: ~10% every 20 seconds
+- **Maximum Speed**: 240 px/s (capped)
+
+### Game Over
+
+When you run out of hearts, you'll see:
+- Final score
+- Statistics (lilies collected, hearts collected)
+- Option to submit score (if authenticated)
+- Play Again or return to Main Menu
+
+## Getting Started
+
+### Prerequisites
+
+- **Flutter 3.38+** (check with `flutter --version`)
+- **Dart SDK 3.10+** (bundled with Flutter)
+- **Backend API** - Rails API server running (see [Backend Repository](https://github.com/dchapman1988/otter_drift_api/))
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd otter_drift
+   ```
+
+2. **Install dependencies**
+   ```bash
+   flutter pub get
+   ```
+
+3. **Configure API credentials**
+
+   Run the app with required environment variables:
+   ```bash
+   flutter run \
+     --dart-define=API_KEY=your_64_char_hex_key \
+     --dart-define=CLIENT_ID=game_client_1 \
+     --dart-define=API_BASE=http://localhost:3000
+   ```
+
+   > **Note**: Android emulators automatically use `http://10.0.2.2:3000` instead of `localhost`
+
+4. **Build for release**
+   ```bash
+   flutter build apk --dart-define=API_KEY=prod_key_here
+   # or for iOS
+   flutter build ios --dart-define=API_KEY=prod_key_here
+   ```
 
 ## Project Structure
 
-- `lib/game/` – Flame components, HUD, and game loop
-- `lib/screens/` – Flutter screens (auth, menu, profile, leaderboard)
-- `lib/services/` – API, authentication, security, and logging helpers
-- `assets/` – Sprites, audio, and UI art
+```
+otter_drift/
+├── lib/
+│   ├── game/                    # Flame game engine code
+│   │   ├── components/          # Game entities (Otter, Logs, Lilies, Hearts)
+│   │   ├── hud/                 # Heads-up display components
+│   │   └── otter_game.dart      # Main game class
+│   ├── screens/                 # Flutter UI screens
+│   │   ├── auth/                # Login/Signup screens
+│   │   ├── game/                # Game screen wrapper
+│   │   ├── menu/                # Main menu screen
+│   │   └── profile/             # Profile management screens
+│   ├── services/                # Business logic & API integration
+│   │   ├── api_service.dart     # HTTP client wrapper
+│   │   ├── auth_service.dart    # Authentication handling
+│   │   ├── backend.dart         # API endpoint definitions
+│   │   └── security_config.dart # Certificate pinning config
+│   ├── models/                  # Data models
+│   ├── widgets/                 # Reusable UI widgets
+│   └── util/                    # Utilities (RNG, etc.)
+├── assets/                      # Game assets
+│   ├── images/                  # Sprites and UI graphics
+│   └── audio/                   # Sound effects and music
+├── test/                        # Test suite
+│   ├── game/                    # Game logic tests
+│   ├── screens/                 # Widget tests
+│   └── util/                    # Utility tests
+└── pubspec.yaml                 # Dependencies and asset configuration
+```
 
-## Gameplay
+## Testing
 
-- **Objective** – Stay alive as long as possible while racking up score.
-- **Controls** – Tap anywhere to move the otter horizontally toward the tap position.
-- **Hearts** – You begin with 3. Colliding with a log costs one heart; grabbing a floating heart restores one (max 3).
-- **Lilies** – Each lily collected adds 10 points.
-- **Logs** – Avoid them; repeated collisions end the run.
-- **Difficulty** – Base river speed is 120 px/s and increases by ~10% every 20 seconds, capping at 240 px/s. Spawn mix is roughly 60% logs, 25% lilies, 15% hearts.
-- **Game Over** – Shows run stats and lets you submit the score to the backend (if signed in) or replay.
+Run the test suite:
 
-Guest play is supported; signing in enables profile sync, achievements, and placement on the global leaderboard managed by the Rails API.
+```bash
+# Run all tests
+flutter test
 
-## Important Details
+# Run specific test file
+flutter test test/util/rng_test.dart
 
-- Authentication uses JWT tokens stored via `flutter_secure_storage`; all API calls run through `ApiService` which injects auth headers and enforces certificate pinning rules.
-- All secret configuration (API keys, base URLs) must be provided via `--dart-define` flags at build/run time to avoid leaking credentials.
-- The project ships with a structured logging utility (`SecureLogger`) that automatically masks sensitive fields before writing to console.
-- Asset pipeline lives under `assets/`; be sure to run `flutter pub get` after modifying `pubspec.yaml` to include new sprites or audio.
+# Run with coverage
+flutter test --coverage
+```
 
-## Backend Notes
+Currently passing: **11 tests** (RNG utility tests)
 
-- Default API base URL is `http://localhost:3000` (Android emulators automatically use `http://10.0.2.2:3000`).
-- Ensure the Rails server exposes the expected routes (auth, profile, leaderboard, game sessions) and shares the same API key.
-- Certificate pinning placeholders live in `lib/services/security_config.dart` if you plan to deploy to production.
+## Configuration
+
+### Required Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `API_KEY` | 64-character hex API key for backend authentication | *Required* |
+| `CLIENT_ID` | Client identifier for the API | `game_client_1` |
+| `API_BASE` | Base URL for the backend API | `http://localhost:3000` |
+
+### Security
+
+- **JWT Tokens**: Stored securely via `flutter_secure_storage`
+- **Certificate Pinning**: Configurable in `lib/services/security_config.dart`
+- **Sensitive Logging**: `SecureLogger` automatically masks sensitive fields
+
+## Backend Integration
+
+This project requires a Rails API backend. See the [backend repository](https://github.com/dchapman1988/otter_drift_api/) for setup instructions.
+
+The backend must provide:
+- Authentication endpoints (login, signup, refresh)
+- User profile management
+- Leaderboard API
+- Game session submission endpoint
+
+Default API routes:
+- `/api/v1/auth/*` - Authentication
+- `/api/v1/players/*` - Player data
+- `/api/v1/leaderboard` - Global leaderboard
+- `/api/v1/game_sessions` - Score submission
 
 ## Troubleshooting
 
-- **Missing API key** – Flutter builds fail with a descriptive error; re-run with `--dart-define=API_KEY=...`.
-- **401 / auth issues** – Confirm the backend is running, keys match, and device/emulator can reach the host URL.
-- **Sprite/audio not loading** – Check asset paths in `pubspec.yaml` and confirm they are bundled.
+### Common Issues
 
-Happy drifting! 🦦
+**Missing API Key Error**
+```
+Error: API_KEY is required
+```
+**Solution**: Run with `--dart-define=API_KEY=your_key_here`
 
-## Media
-<img width="517" height="1029" alt="Screenshot 2025-11-13 at 8 28 03 AM" src="https://github.com/user-attachments/assets/d5963007-d7a3-4d49-a3ea-5a607d8c15d7" />
-<img width="517" height="1029" alt="Screenshot 2025-11-12 at 2 27 56 PM" src="https://github.com/user-attachments/assets/97459875-1033-43a5-ba9f-2a39a4bbdb34" />
-<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 18 16 PM" src="https://github.com/user-attachments/assets/c4e7c0d9-37d7-4e63-9063-a4fb821c0aef" />
-<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 18 21 PM" src="https://github.com/user-attachments/assets/6100a19c-c2b1-4e5a-9260-4f40f8f55e3a" />
-<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 18 39 PM" src="https://github.com/user-attachments/assets/20fe3029-e2b2-4e29-93a1-6977cf152271" />
-<img width="517" height="1029" alt="Screenshot 2025-11-08 at 3 18 48 PM" src="https://github.com/user-attachments/assets/56b1de6b-eeb0-49aa-a5ce-81e0cecbe7b6" />
+**401 Authentication Errors**
+- Verify backend is running
+- Check API key matches backend configuration
+- Ensure device/emulator can reach the API URL
+- Android emulator should use `http://10.0.2.2:3000` instead of `localhost`
 
+**Assets Not Loading**
+- Run `flutter pub get` after modifying `pubspec.yaml`
+- Verify asset paths in `pubspec.yaml` match file structure
+- For web builds, check asset bundling configuration
 
+**Audio Issues**
+- Ensure audio files are in `assets/audio/` directory
+- Check file formats are supported (WAV recommended)
 
+## Contributing
 
+Contributions are welcome! Please follow these guidelines:
 
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
+## Dependencies
 
+### Core
+- **Flutter** - UI framework
+- **Flame 1.33** - Game engine
+- **Flame Audio** - Audio system
+
+### Networking
+- **Dio** - HTTP client
+- **Connectivity Plus** - Network status
+
+### Storage & Security
+- **Flutter Secure Storage** - Secure credential storage
+- **Shared Preferences** - App preferences
+- **JWT Decoder** - Token parsing
+
+See `pubspec.yaml` for complete dependency list.
+
+---
+
+Made with ❤️  and 🦦
+
+**Happy Drifting!** 🏞️
