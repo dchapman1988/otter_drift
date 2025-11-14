@@ -46,11 +46,7 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   bool _isPaused = false;
   StreamSubscription<GameSessionSyncEvent>? _syncSubscription;
 
-  OtterGame({
-    this.player,
-    this.isGuestMode = false,
-    this.onExitToMenu,
-  });
+  OtterGame({this.player, this.isGuestMode = false, this.onExitToMenu});
 
   /// Returns whether the game is currently paused
   bool get isPaused => _isPaused;
