@@ -3,11 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_frontend/main.dart';
 
 void main() {
-  testWidgets('App initializes correctly', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Build the app and trigger a frame.
     await tester.pumpWidget(const OtterDriftApp());
 
-    // Verify app is built
+    // App should build without throwing.
     expect(find.byType(OtterDriftApp), findsOneWidget);
   });
 }
