@@ -23,7 +23,8 @@ jobs:
         uses: subosito/flutter-action@v2
         id: flutter
         with:
-          flutter-version: '3.38.0'  # Flutter 3.38 includes Dart 3.10.0
+          flutter-version: '3.38.1' # Flutter 3.38.1 bundles stable Dart 3.10.0
+          channel: stable
           cache: true
 
       # Get Flutter dependencies
