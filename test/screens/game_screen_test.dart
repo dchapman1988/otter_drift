@@ -30,7 +30,9 @@ void main() {
       expect(find.byType(GameScreen), findsOneWidget);
     });
 
-    testWidgets('shows player indicator for guest mode', (WidgetTester tester) async {
+    testWidgets('shows player indicator for guest mode', (
+      WidgetTester tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: GameScreen(
@@ -48,7 +50,9 @@ void main() {
       expect(find.text('Guest'), findsOneWidget);
     });
 
-    testWidgets('shows player name for authenticated user', (WidgetTester tester) async {
+    testWidgets('shows player name for authenticated user', (
+      WidgetTester tester,
+    ) async {
       final player = Player(
         id: 123,
         username: 'testuser',

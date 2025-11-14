@@ -90,7 +90,7 @@ void main() {
     test('uses current timestamp as seed when not provided', () {
       final rng1 = SeededRandom();
       final rng2 = SeededRandom();
-      
+
       // They should have different seeds (unless created at exactly same millisecond)
       // This is a probabilistic test - it's very unlikely they'll have the same seed
       expect(rng1.seed, greaterThanOrEqualTo(0));
