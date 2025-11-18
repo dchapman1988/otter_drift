@@ -7,6 +7,7 @@ import '../../services/player_auth_service.dart';
 import '../../services/auth_state_service.dart';
 import '../profile/profile_screen.dart';
 import '../leaderboard_screen.dart';
+import '../suggestion_screen.dart';
 
 class MainMenuScreen extends StatefulWidget {
   final Player? player;
@@ -342,6 +343,32 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white70,
                     side: const BorderSide(color: Colors.white38, width: 2),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Suggestions Button
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SuggestionScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.feedback),
+                  label: const Text(
+                    'Submit Suggestion',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF4ECDC4),
+                    side: const BorderSide(color: Color(0xFF4ECDC4), width: 2),
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
