@@ -28,7 +28,8 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
   }
 
   int get _currentLength => _noteController.text.length;
-  bool get _isValid => _currentLength >= _minLength && _currentLength <= _maxLength;
+  bool get _isValid =>
+      _currentLength >= _minLength && _currentLength <= _maxLength;
 
   Future<void> _submitSuggestion() async {
     if (!_formKey.currentState!.validate()) {
@@ -90,8 +91,9 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
               _fieldErrors = {};
               errors.forEach((field, errorList) {
                 if (errorList is List) {
-                  _fieldErrors![field] =
-                      errorList.map((e) => e.toString()).toList();
+                  _fieldErrors![field] = errorList
+                      .map((e) => e.toString())
+                      .toList();
                 } else {
                   _fieldErrors![field] = [errorList.toString()];
                 }
@@ -101,7 +103,8 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
               _errorMessage = 'Validation failed. Please check your input.';
             }
           } else {
-            _errorMessage = 'Network error: ${e.message ?? "Unable to submit suggestion. Please check your connection."}';
+            _errorMessage =
+                'Network error: ${e.message ?? "Unable to submit suggestion. Please check your connection."}';
           }
         });
       }
@@ -146,7 +149,9 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
                   decoration: BoxDecoration(
                     color: Colors.green.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.green.withValues(alpha: 0.5)),
+                    border: Border.all(
+                      color: Colors.green.withValues(alpha: 0.5),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -174,7 +179,9 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
                   decoration: BoxDecoration(
                     color: Colors.red.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.red.withValues(alpha: 0.5)),
+                    border: Border.all(
+                      color: Colors.red.withValues(alpha: 0.5),
+                    ),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,7 +252,9 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Enter your suggestion here (3-1000 characters)...',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+                  hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                  ),
                   filled: true,
                   fillColor: Colors.white.withValues(alpha: 0.1),
                   border: OutlineInputBorder(
@@ -269,17 +278,11 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
                   ),
                   errorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Colors.red,
-                      width: 2,
-                    ),
+                    borderSide: const BorderSide(color: Colors.red, width: 2),
                   ),
                   focusedErrorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Colors.red,
-                      width: 2,
-                    ),
+                    borderSide: const BorderSide(color: Colors.red, width: 2),
                   ),
                   errorText: _fieldErrors?['note']?.isNotEmpty == true
                       ? _fieldErrors!['note']!.first
@@ -330,9 +333,7 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
                   Text(
                     '$_currentLength / $_maxLength',
                     style: TextStyle(
-                      color: _isValid
-                          ? const Color(0xFF4ECDC4)
-                          : Colors.orange,
+                      color: _isValid ? const Color(0xFF4ECDC4) : Colors.orange,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -344,14 +345,18 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
 
               // Submit Button
               ElevatedButton.icon(
-                onPressed: (_isSubmitting || !_isValid) ? null : _submitSuggestion,
+                onPressed: (_isSubmitting || !_isValid)
+                    ? null
+                    : _submitSuggestion,
                 icon: _isSubmitting
                     ? const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       )
                     : const Icon(Icons.send, size: 20),
@@ -385,7 +390,8 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
                     return FutureBuilder(
                       future: PlayerAuthService.getCurrentPlayer(),
                       builder: (context, playerSnapshot) {
-                        if (playerSnapshot.hasData && playerSnapshot.data != null) {
+                        if (playerSnapshot.hasData &&
+                            playerSnapshot.data != null) {
                           final player = playerSnapshot.data!;
                           return Container(
                             padding: const EdgeInsets.all(12),
@@ -449,5 +455,3 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
     );
   }
 }
-
-

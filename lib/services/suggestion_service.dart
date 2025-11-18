@@ -19,7 +19,9 @@ class SuggestionService {
     String? playerName,
   }) async {
     try {
-      SecureLogger.logDebug('Submitting suggestion (note length: ${note.length})');
+      SecureLogger.logDebug(
+        'Submitting suggestion (note length: ${note.length})',
+      );
 
       // If playerName is not provided, check if user is authenticated
       String? resolvedPlayerName = playerName;
@@ -32,14 +34,14 @@ class SuggestionService {
             'User is authenticated, including player_name: $resolvedPlayerName',
           );
         } else {
-          SecureLogger.logDebug('User is not authenticated, submitting as guest');
+          SecureLogger.logDebug(
+            'User is not authenticated, submitting as guest',
+          );
         }
       }
 
       // Build request payload
-      final suggestionData = <String, dynamic>{
-        'note': note,
-      };
+      final suggestionData = <String, dynamic>{'note': note};
 
       // Only include player_name if it's provided
       if (resolvedPlayerName != null && resolvedPlayerName.isNotEmpty) {
@@ -48,11 +50,7 @@ class SuggestionService {
 
       final requestData = {'suggestion': suggestionData};
 
-      SecureLogger.logRequest(
-        'POST',
-        '/api/v1/suggestions',
-        body: requestData,
-      );
+      SecureLogger.logRequest('POST', '/api/v1/suggestions', body: requestData);
 
       final response = await ApiService.post(
         '/api/v1/suggestions',
@@ -71,15 +69,10 @@ class SuggestionService {
       } else if (response.statusCode == 422) {
         // Handle validation errors
         final errors = response.data['errors'] as Map<String, dynamic>?;
-        SecureLogger.logError(
-          'Suggestion validation failed',
-          error: errors,
-        );
+        SecureLogger.logError('Suggestion validation failed', error: errors);
         throw ValidationException(errors ?? {});
       } else {
-        SecureLogger.logError(
-          'Unexpected status code: ${response.statusCode}',
-        );
+        SecureLogger.logError('Unexpected status code: ${response.statusCode}');
         throw Exception('Failed to submit suggestion: ${response.statusCode}');
       }
     } on DioException catch (e) {
@@ -152,5 +145,3 @@ class ValidationException implements Exception {
   @override
   String toString() => getMessage();
 }
-
-
