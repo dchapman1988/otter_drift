@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/suggestion_service.dart';
 import '../services/player_auth_service.dart';
+import '../widgets/banner_ad_widget.dart';
 import 'package:dio/dio.dart';
 
 class SuggestionScreen extends StatefulWidget {
@@ -134,13 +135,17 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+      body: Column(
+        children: [
+          // Scrollable content
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
               // Success Message
               if (_showSuccessMessage)
                 Container(
@@ -448,9 +453,14 @@ class _SuggestionScreenState extends State<SuggestionScreen> {
                   );
                 },
               ),
-            ],
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+          // Banner Ad at bottom (outside scrollable area)
+          const BannerAdWidget(),
+        ],
       ),
     );
   }

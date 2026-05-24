@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/game_history_entry.dart';
 import '../models/game_history_response.dart';
 import '../services/player_api_service.dart';
+import '../widgets/banner_ad_widget.dart';
 
 class GameHistoryScreen extends StatefulWidget {
   final String username;
@@ -223,78 +224,87 @@ class _GameHistoryScreenState extends State<GameHistoryScreen> {
                   ),
                 ),
               )
-            : RefreshIndicator(
-                onRefresh: () => _loadGameHistory(),
-                color: const Color(0xFF4ECDC4),
-                child: Column(
-                  children: [
-                    // Header with total games
-                    Container(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            : Column(
+                children: [
+                  // Scrollable content with refresh
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () => _loadGameHistory(),
+                      color: const Color(0xFF4ECDC4),
+                      child: Column(
                         children: [
-                          Text(
-                            'Total Games: ${_gameHistory!.totalGames}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white70,
+                          // Header with total games
+                          Container(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Total Games: ${_gameHistory!.totalGames}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                                Text(
+                                  'Showing ${_gameHistory!.games.length} of ${_gameHistory!.total}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white54,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Text(
-                            'Showing ${_gameHistory!.games.length} of ${_gameHistory!.total}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.white54,
+                          // Game list
+                          Expanded(
+                            child: ListView.builder(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              itemCount:
+                                  _gameHistory!.games.length +
+                                  (_gameHistory!.hasMore ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index >= _gameHistory!.games.length) {
+                                  // Load more button
+                                  return Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Center(
+                                      child: _isLoadingMore
+                                          ? const CircularProgressIndicator(
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    Color(0xFF4ECDC4),
+                                                  ),
+                                            )
+                                          : ElevatedButton.icon(
+                                              onPressed: () =>
+                                                  _loadGameHistory(loadMore: true),
+                                              icon: const Icon(Icons.expand_more),
+                                              label: const Text('Load More'),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(
+                                                  0xFF4ECDC4,
+                                                ),
+                                                foregroundColor: Colors.white,
+                                              ),
+                                            ),
+                                    ),
+                                  );
+                                }
+
+                                final game = _gameHistory!.games[index];
+                                return _buildGameHistoryEntry(game);
+                              },
                             ),
                           ),
                         ],
                       ),
                     ),
-                    // Game list
-                    Expanded(
-                      child: ListView.builder(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount:
-                            _gameHistory!.games.length +
-                            (_gameHistory!.hasMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index >= _gameHistory!.games.length) {
-                            // Load more button
-                            return Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Center(
-                                child: _isLoadingMore
-                                    ? const CircularProgressIndicator(
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              Color(0xFF4ECDC4),
-                                            ),
-                                      )
-                                    : ElevatedButton.icon(
-                                        onPressed: () =>
-                                            _loadGameHistory(loadMore: true),
-                                        icon: const Icon(Icons.expand_more),
-                                        label: const Text('Load More'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFF4ECDC4,
-                                          ),
-                                          foregroundColor: Colors.white,
-                                        ),
-                                      ),
-                              ),
-                            );
-                          }
-
-                          final game = _gameHistory!.games[index];
-                          return _buildGameHistoryEntry(game);
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  // Banner Ad at bottom (outside scrollable area)
+                  const BannerAdWidget(),
+                ],
               ),
       ),
     );

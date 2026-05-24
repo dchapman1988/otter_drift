@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/leaderboard_widget.dart';
+import '../widgets/banner_ad_widget.dart';
 
 class LeaderboardScreen extends StatelessWidget {
   const LeaderboardScreen({super.key});
@@ -21,9 +22,17 @@ class LeaderboardScreen extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: const LeaderboardWidget(
-          initialLimit: 100,
-          showLimitSelector: true,
+        child: Column(
+          children: [
+            const Expanded(
+              child: LeaderboardWidget(
+                initialLimit: 100,
+                showLimitSelector: true,
+              ),
+            ),
+            // Banner Ad at bottom with proper spacing
+            const BannerAdWidget(),
+          ],
         ),
       ),
     );

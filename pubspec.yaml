@@ -46,6 +46,8 @@ dependencies:
   http_parser: ^4.0.2
   connectivity_plus: ^5.0.2
   shared_preferences: ^2.2.3
+  # AdMob for mobile game monetization
+  google_mobile_ads: ^5.1.0
 
 dev_dependencies:
   flutter_test:

@@ -5,11 +5,9 @@
 *.swp
 .DS_Store
 .atom/
-.build/
 .buildlog/
 .history
 .svn/
-.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -27,10 +25,27 @@ migrate_working_dir/
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
+.packages
 .pub-cache/
 .pub/
 /build/
+
+# Android signing — never commit keystores or release credentials.
+android/key.properties
+*.jks
+*.keystore
+
+# Secrets, credentials, certs — never commit.
+*.key
+*.pem
+*.p12
+*.pfx
+.env
+.env.*
+
+# Test coverage artifacts
 /coverage/
 
 # Symbolication related
@@ -44,87 +59,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Security and Credentials
-# API Keys and Secret Keys
-*.key
-*.pem
-*.p12
-*.pfx
-*.jks
-*.keystore
-api_keys.txt
-secrets.txt
-credentials.txt
-.env
-.env.local
-.env.development
-.env.staging
-.env.production
-.env.*.local
-
-# Development scripts with hardcoded keys
-run_dev.sh
-dev_scripts/
-build_scripts/*.sh
-!build_scripts/build_example.sh
-
-# Configuration files that might contain secrets
-config/secrets.dart
-config/api_keys.dart
-config/credentials.dart
-lib/config/secrets.dart
-lib/config/api_keys.dart
-lib/config/credentials.dart
-
-# Log files that might contain sensitive data
-*.log
-logs/
-*.log.*
-
-# Certificate files
-*.crt
-*.cer
-*.der
-*.p7b
-*.p7c
-*.spc
-certificates/
-certs/
-
-# Backup files that might contain secrets
-*.bak
-*.backup
-*.old
-*_backup.*
-*_old.*
-
-# IDE and editor files that might contain sensitive data
-.vscode/settings.json
-.vscode/launch.json
-.idea/workspace.xml
-.idea/encodings.xml
-.idea/misc.xml
-.idea/modules.xml
-.idea/vcs.xml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/usage.statistics.xml
-.idea/dictionaries
-.idea/shelf
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-temp/
-tmp/
-
-security_check.sh
+# Generated documentation
+docs/api/

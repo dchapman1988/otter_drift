@@ -238,7 +238,37 @@ Contributions are welcome! Please follow these guidelines:
 - **Shared Preferences** - App preferences
 - **JWT Decoder** - Token parsing
 
+### Monetization
+- **Google Mobile Ads** - AdMob integration for banner, interstitial, and rewarded ads
+
 See `pubspec.yaml` for complete dependency list.
+
+## Documentation
+
+### API Documentation
+
+Generate API documentation using dartdoc:
+
+```bash
+dart doc
+```
+
+Documentation will be generated in `docs/api/`.
+
+### Deployment Guide
+
+For instructions on deploying to Google Play Store and configuring advertisements, see the [Deployment Guide](docs/deployment.md).
+
+### Code Documentation
+
+All code is documented with dartdoc comments. Key areas:
+
+- **Game Engine** (`lib/game/`) - Core game logic and components
+- **Services** (`lib/services/`) - Business logic, API integration, and ad management
+- **UI Components** (`lib/screens/`, `lib/widgets/`) - User interface screens and widgets
+- **Models** (`lib/models/`) - Data models and structures
+
+See [Documentation README](docs/README.md) for more information.
 
 ---
 

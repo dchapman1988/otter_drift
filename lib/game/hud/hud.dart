@@ -61,6 +61,7 @@ class Hud extends Component with HasGameReference {
   Function()? onPlayAgain;
   Function()? onMainMenu;
   Function()? onQuit;
+  Function()? onWatchRewardedAd;
 
   @override
   Future<void> onLoad() async {
@@ -327,6 +328,14 @@ class Hud extends Component with HasGameReference {
       HudSpacing.buttonHeight,
     );
 
+    // Watch Ad for Extra Life button (first button, special styling)
+    final watchAdRect = Rect.fromLTWH(
+      centerX,
+      firstButtonY - HudSpacing.buttonHeight - HudSpacing.gameOverButtonGap,
+      HudSpacing.buttonWidth,
+      HudSpacing.buttonHeight,
+    );
+
     // Quit game button
     final quitRect = Rect.fromLTWH(
       centerX,
@@ -341,7 +350,13 @@ class Hud extends Component with HasGameReference {
       debugPrint('Hud::tapPoint ($tapX, $tapY)');
     }
 
-    if (playAgainRect.contains(Offset(tapX, tapY))) {
+    if (watchAdRect.contains(Offset(tapX, tapY))) {
+      if (kDebugMode) {
+        debugPrint('Hud::watchAd tapped');
+      }
+      onWatchRewardedAd?.call();
+      return true;
+    } else if (playAgainRect.contains(Offset(tapX, tapY))) {
       if (kDebugMode) {
         debugPrint('Hud::playAgain tapped');
       }
@@ -382,9 +397,29 @@ class Hud extends Component with HasGameReference {
             const Color(0xFF0EA5E9) // Nice blue
         ..style = PaintingStyle.fill;
 
+      final watchAdButtonPaint = Paint()
+        ..color =
+            const Color(0xFFF59E0B) // Orange/amber for rewarded ad
+        ..style = PaintingStyle.fill;
+
       final centerX = game.size.x / 2 - HudSpacing.buttonWidth / 2;
       final firstButtonY =
           _calculateFirstButtonY() - HudSpacing.buttonHeight / 2;
+
+      // Watch Ad for Extra Life button (special styling)
+      final watchAdRect = Rect.fromLTWH(
+        centerX,
+        firstButtonY - HudSpacing.buttonHeight - HudSpacing.gameOverButtonGap,
+        HudSpacing.buttonWidth,
+        HudSpacing.buttonHeight,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          watchAdRect,
+          const Radius.circular(HudSpacing.buttonRadius),
+        ),
+        watchAdButtonPaint,
+      );
 
       // Play Again button
       final playAgainRect = Rect.fromLTWH(
@@ -434,6 +469,24 @@ class Hud extends Component with HasGameReference {
 
       // Button text
       final textPainter = TextPainter(textDirection: TextDirection.ltr);
+
+      // Watch Ad button text
+      textPainter.text = TextSpan(
+        text: '🎬 Watch Ad for Extra Life',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: HudSpacing.fontSizeButton - 2,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+      textPainter.layout();
+      textPainter.paint(
+        canvas,
+        Offset(
+          watchAdRect.center.dx - textPainter.width / 2,
+          watchAdRect.center.dy - textPainter.height / 2,
+        ),
+      );
 
       textPainter.text = TextSpan(
         text: 'Play Again',

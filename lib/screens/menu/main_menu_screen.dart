@@ -5,6 +5,7 @@ import '../../models/player.dart';
 import '../../services/player_api_service.dart';
 import '../../services/player_auth_service.dart';
 import '../../services/auth_state_service.dart';
+import '../../widgets/banner_ad_widget.dart';
 import '../profile/profile_screen.dart';
 import '../leaderboard_screen.dart';
 import '../suggestion_screen.dart';
@@ -194,15 +195,18 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF2C1B15),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 24.0,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+        child: Column(
+          children: [
+            // Scrollable content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 24.0,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                 // Logo/Title Section
                 Image.asset(
                   'assets/images/logos/otter_logo.png',
@@ -457,9 +461,13 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
                     color: Colors.white.withValues(alpha: 0.3),
                   ),
                 ),
-              ],
+                  ],
+                ),
+              ),
             ),
-          ),
+            // Banner Ad at bottom (outside scrollable area)
+            const BannerAdWidget(),
+          ],
         ),
       ),
     );

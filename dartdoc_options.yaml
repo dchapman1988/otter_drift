@@ -1,0 +1,36 @@
+# Dartdoc configuration for Otter Drift
+# See: https://dart.dev/tools/dartdoc
+
+dartdoc:
+  # Generate documentation for public APIs only
+  includePrivate: false
+  
+  # Include source code in documentation
+  includeSource: true
+  
+  # Exclude certain packages from documentation
+  exclude:
+    - 'build/**'
+    - 'test/**'
+    - '**/*.g.dart'
+    - '**/*.freezed.dart'
+  
+  # Output directory
+  output: docs/api
+  
+  # Custom header for documentation (removed - using default)
+  
+  # Categories for organizing documentation
+  categories:
+    'Game Engine':
+      - 'lib/game/**'
+    'Services':
+      - 'lib/services/**'
+    'UI Components':
+      - 'lib/screens/**'
+      - 'lib/widgets/**'
+    'Models':
+      - 'lib/models/**'
+    'Utilities':
+      - 'lib/util/**'
+

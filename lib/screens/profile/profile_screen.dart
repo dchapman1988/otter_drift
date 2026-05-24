@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../services/backend.dart';
 import '../../models/player.dart';
 import '../../widgets/achievements_list.dart';
+import '../../widgets/banner_ad_widget.dart';
 import '../leaderboard_screen.dart';
 import '../game_history_screen.dart';
 import 'edit_profile_screen.dart';
@@ -192,11 +193,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4ECDC4)),
               ),
             )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+          : Column(
+              children: [
+                // Scrollable content
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                   // Profile Header
                   Container(
                     width: double.infinity,
@@ -447,8 +452,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                ],
-              ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Banner Ad at bottom (outside scrollable area)
+                const BannerAdWidget(),
+              ],
             ),
     );
   }

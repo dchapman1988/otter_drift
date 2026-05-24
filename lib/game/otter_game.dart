@@ -16,6 +16,7 @@ import '../util/rng.dart';
 import '../models/player.dart';
 import '../models/game_session.dart';
 import '../services/game_session_sync_service.dart';
+import '../services/ad_service.dart';
 
 class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   late RiverBg _riverBg;
@@ -102,7 +103,11 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
     _hud.onPlayAgain = restart;
     _hud.onMainMenu = () => onExitToMenu?.call();
     _hud.onQuit = quitGame;
+    _hud.onWatchRewardedAd = _watchRewardedAdForExtraLife;
     add(_hud);
+
+    // Preload rewarded ad for game over screen
+    AdService().loadRewardedAd();
 
     _syncSubscription = GameSessionSyncService.instance.syncEvents.listen((
       event,
@@ -416,6 +421,55 @@ class OtterGame extends FlameGame with HasCollisionDetection, TapCallbacks {
   void quitGame() {
     // Exit the Flutter app
     SystemNavigator.pop();
+  }
+
+  /// Watch rewarded ad to get an extra life and continue playing
+  void _watchRewardedAdForExtraLife() {
+    final adService = AdService();
+    adService.loadRewardedAd(
+      onRewarded: () {
+        // User watched the ad, give them an extra life and continue
+        hearts = 1; // Give one heart to continue
+        _hud.updateHearts(hearts);
+        
+        // Resume game
+        if (_isPaused) {
+          resumeGame();
+        }
+        
+        // Restore otter if hidden
+        if (!children.contains(_otter)) {
+          add(_otter);
+        }
+        
+        // Resume background scrolling
+        _riverBg.setScrollSpeed(currentSpeed);
+        
+        // Hide game over screen
+        _hud.hideGameOver();
+        
+        // Restart background music
+        FlameAudio.bgm.play('background_music.wav', volume: 1.0);
+        
+        // Preload next rewarded ad
+        adService.loadRewardedAd();
+      },
+      onFailed: (error) {
+        // Ad failed to load or show
+        // Could show a message to user, but for now just preload for next time
+        adService.loadRewardedAd();
+      },
+    );
+    
+    // Show the ad
+    if (!adService.showRewardedAd()) {
+      // Ad not ready, try loading it
+      adService.loadRewardedAd(
+        onFailed: (error) {
+          // Handle error - could show message to user
+        },
+      );
+    }
   }
 
   @override

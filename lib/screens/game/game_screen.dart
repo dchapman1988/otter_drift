@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart';
 import '../../services/auth_state_service.dart';
+import '../../services/ad_service.dart';
 import '../../models/player.dart';
 import '../../screens/profile/profile_screen.dart';
 import '../../game/otter_game.dart';
@@ -37,6 +38,8 @@ class _GameScreenState extends State<GameScreen> {
       isGuestMode: widget.isGuestMode,
       onExitToMenu: _returnToMainMenu,
     );
+    // Preload interstitial ad for after game session
+    AdService().loadInterstitialAd();
   }
 
   void _showProfile(BuildContext context) {
@@ -78,7 +81,23 @@ class _GameScreenState extends State<GameScreen> {
 
   void _returnToMainMenu() {
     if (!mounted) return;
-    Navigator.of(context).pop();
+    // Show interstitial ad before returning to menu (best practice: natural break point)
+    final adService = AdService();
+    if (adService.showInterstitialAd()) {
+      // Ad was shown, will pop after ad is dismissed
+      // The ad's fullScreenContentCallback will handle navigation
+      // For now, we'll pop after a short delay to ensure ad shows
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      });
+    } else {
+      // No ad available, just return to menu
+      Navigator.of(context).pop();
+      // Preload for next time
+      adService.loadInterstitialAd();
+    }
   }
 
   void _showPauseMenu(BuildContext context) {
