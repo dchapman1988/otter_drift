@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_frontend/models/player.dart';
-import 'package:flutter_frontend/models/player_profile.dart';
+import 'package:otter_drift/models/player.dart';
+import 'package:otter_drift/models/player_profile.dart';
 
 void main() {
   group('Player model', () {

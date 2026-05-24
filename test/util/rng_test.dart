@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_frontend/util/rng.dart';
+import 'package:otter_drift/util/rng.dart';
 
 void main() {
   group('SeededRandom', () {

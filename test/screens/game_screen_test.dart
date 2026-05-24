@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_frontend/screens/game/game_screen.dart';
-import 'package:flutter_frontend/services/auth_state_service.dart';
-import 'package:flutter_frontend/models/player.dart';
+import 'package:otter_drift/screens/game/game_screen.dart';
+import 'package:otter_drift/services/auth_state_service.dart';
+import 'package:otter_drift/models/player.dart';
 
 void main() {
   group('GameScreen Widget Tests', () {

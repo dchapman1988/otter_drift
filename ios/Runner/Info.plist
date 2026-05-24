@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>OtterDrift</string>
+	<string>Otter Drift</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -45,6 +45,14 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- Export compliance: app uses only HTTPS (exempt encryption). -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<!-- image_picker usage strings (required for profile photo selection). -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Otter Drift uses your photo library so you can choose a profile picture.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Otter Drift uses the camera so you can take a profile picture.</string>
 	<!-- AdMob: REPLACE with your iOS AdMob App ID before release. -->
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>

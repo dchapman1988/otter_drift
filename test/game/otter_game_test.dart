@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_frontend/game/otter_game.dart';
-import 'package:flutter_frontend/models/player.dart';
+import 'package:otter_drift/game/otter_game.dart';
+import 'package:otter_drift/models/player.dart';
 
 void main() {
   group('OtterGame (without onLoad)', () {

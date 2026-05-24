@@ -1,5 +1,5 @@
-name: flutter_frontend
-description: "A new Flutter project."
+name: otter_drift
+description: "Otter Drift — a fast-paced river-running game where you guide an otter through obstacles, collect lily pads and hearts, and chase a high score."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -60,6 +60,15 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
   flame_test: ^2.1.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/images/logos/otter_logo.png"
+  remove_alpha_ios: true
+  background_color_ios: "#0a3d62"
+  min_sdk_android: 21
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
